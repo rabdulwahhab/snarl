@@ -142,7 +142,7 @@ def main():
                 if line.strip() == 'exit':
                     break
                 else:
-                    rawNumJsonStr = rawNumJsonStr + ' ' + line
+                    rawNumJsonStr = rawNumJsonStr + ' ' + line.strip()
             return rawNumJsonStr
         except:
             return rawNumJsonStr
