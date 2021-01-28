@@ -33,42 +33,6 @@ def calcNumJson(numJson, mathFunc):
     return result
 
 
-def productNumJson(numJson):
-    if type(numJson) is int:
-        result = numJson
-    elif type(numJson) is str:
-        result = 1
-    elif type(numJson) is list:  # recur here
-        result = 1
-        for element in numJson:
-            result *= productNumJson(element)
-    else:  # dict case
-        if "payload" in numJson.keys():
-            result = productNumJson(numJson["payload"])
-        else:
-            result = 1
-
-    return result
-
-
-def sumNumJson(numJson):
-    if type(numJson) is int:
-        result = numJson
-    elif type(numJson) is str:
-        result = 0
-    elif type(numJson) is list:  # recur here
-        result = 0
-        for element in numJson:
-            result += sumNumJson(element)
-    else:  # dict case
-        if "payload" in numJson.keys():
-            result = sumNumJson(numJson["payload"])
-        else:
-            result = 0
-
-    return result
-
-
 def delimSplit(numJsonStr):
     parsedInputArray = []
     layerStart = 0
@@ -163,7 +127,7 @@ def main():
             resDict = {"object": strNumJson}
             jd = json.JSONDecoder()
             try:
-                data = jd.decode(strNumJson)  # Convert NumJSON strings to Py data
+                data = jd.decode(strNumJson)
             except:
                 print("Malformed Input...")
                 exit(1)
