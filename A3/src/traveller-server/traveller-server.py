@@ -3,9 +3,16 @@ from typing import List
 
 class Town:
     def __init__(self, name):
-        self.name: str = name
-        self.neighbors: List[Town] = []
-        self.characters: List[Character] = []
+        self._name: str = name
+        self._neighbors: List[Town] = []
+        self._characters: List[Character] = []
+
+    def getName(self):
+        """
+        Returns the name of the Town.
+        :return: Str
+        """
+        return self._name
 
     def addNeighbor(self, neighbor):
         """
@@ -13,7 +20,7 @@ class Town:
         :param neighbor:
         :return: None
         """
-        self.neighbors.append(neighbor)
+        self._neighbors.append(neighbor)
         return None
 
     def removeNeighbor(self, neighbor):
@@ -23,8 +30,8 @@ class Town:
         :return: None
         :raise: Exception if Neighbor doesn't exist in Town
         """
-        if neighbor in self.neighbors:
-            self.neighbors.remove(neighbor)
+        if neighbor in self._neighbors:
+            self._neighbors.remove(neighbor)
             return None
         else:
             raise Exception("Removing a Neighbor not in this Town")
@@ -34,7 +41,7 @@ class Town:
         Gets list of neighbors from the Town.
         :return: List of neighbors of this town
         """
-        return self.neighbors
+        return self._neighbors
 
     def addCharacter(self, character):
         """
@@ -42,7 +49,7 @@ class Town:
         :param character:
         :return: None
         """
-        self.characters.append(character)
+        self._characters.append(character)
         return None
 
     def removeCharacter(self, character):
@@ -52,8 +59,8 @@ class Town:
         :return: None
         :raise: Exception if Character doesn't exist in Town
         """
-        if character in self.characters:
-            self.characters.remove(character)
+        if character in self._characters:
+            self._characters.remove(character)
             return None
         else:
             raise Exception("Removing a Character not in this Town")
@@ -63,7 +70,7 @@ class Town:
         Gets list of characters from the Town.
         :return: List of character in this town
         """
-        return self.characters
+        return self._characters
 
     def getEmptyNeighbors(self):
         """
@@ -71,7 +78,7 @@ class Town:
         :return: Set of Neighbors
         """
         emptyNeighbors = set()
-        for currNeighbor in self.neighbors:
+        for currNeighbor in self._neighbors:
             if len(currNeighbor.getCharacters()) == 0:
                 emptyNeighbors.add(currNeighbor)
         return emptyNeighbors
@@ -79,15 +86,22 @@ class Town:
 
 class Character:
     def __init__(self, name, location):
-        self.name: str = name
-        self.location: Town = location
+        self._name: str = name
+        self._location: Town = location
+
+    def getName(self):
+        """
+        Returns the name of the Character.
+        :return: Str
+        """
+        return self._name
 
     def moveCharacter(self, town):
         """
         Moves this character to the destination.
         :return: None
         """
-        self.location = town
+        self._location = town
         return None
 
     def getLocation(self):
@@ -95,7 +109,7 @@ class Character:
         Get the current location of the character.
         :return: Town
         """
-        return self.location
+        return self._location
 
     def canAnonymouslyRelocate(self, dest: Town):
         """
@@ -104,13 +118,13 @@ class Character:
         :param dest: Town
         :return: Boolean
         """
-        unvisited = set(self.location.getEmptyNeighbors())
-        visited = {self.location}
+        unvisited = set(self._location.getEmptyNeighbors())
+        visited = {self._location}
 
         while len(unvisited) > 0:
             currentTown = unvisited.pop()
             if len(currentTown.getCharacters()) == 0:
-                if currentTown.name == dest.name:  # TODO how to tell if equal?
+                if currentTown.name == dest.getName():  # TODO how to tell if equal?
                     return True
                 else:
                     visited.add(currentTown)
@@ -123,9 +137,16 @@ class Character:
 class TownNetwork:
     def __init__(self, towns=None):
         if towns is None:
-            self.towns: List[Town] = []
+            self._towns: List[Town] = []
         else:
-            self.towns: List[Town] = towns
+            self._towns: List[Town] = towns
+
+    def getTowns(self):
+        """
+        Returns a List of Towns in the TownNetwork.
+        :return: List
+        """
+        return self._towns
 
     def addTown(self, town):
         """
@@ -133,7 +154,7 @@ class TownNetwork:
         :param town:
         :return: None
         """
-        self.towns.append(town)
+        self._towns.append(town)
         return None
 
     def removeTown(self, town):
@@ -143,8 +164,8 @@ class TownNetwork:
         :return: None
         :raise: Exception if Town doesn't exist in TownNetwork
         """
-        if town in self.towns:
-            self.towns.remove(town)
+        if town in self._towns:
+            self._towns.remove(town)
             return None
         else:
             raise Exception("Removing a Town not in this TownNetwork")
