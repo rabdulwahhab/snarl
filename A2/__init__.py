@@ -1,1 +1,1 @@
-from .src.a2 import *
+from .src.a2 import delimSplit
