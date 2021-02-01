@@ -80,7 +80,7 @@ class Town:
         emptyNeighbors = set()
         for currNeighbor in self._neighbors:
             if len(currNeighbor.getCharacters()) == 0:
-                emptyNeighbors.add(currNeighbor)
+                emptyNeighbors = emptyNeighbors.union([currNeighbor])
         return emptyNeighbors
 
 
@@ -124,13 +124,14 @@ class Character:
         while len(unvisited) > 0:
             currentTown = unvisited.pop()
             if len(currentTown.getCharacters()) == 0:
-                if currentTown.name == dest.getName():  # TODO how to tell if equal?
+                if currentTown.getName() == dest.getName():
                     return True
                 else:
                     visited.add(currentTown)
                     currTownsNeighbors = currentTown.getEmptyNeighbors()
                     newEmptyNeighbors = currTownsNeighbors.difference(visited)
-                    unvisited.add(newEmptyNeighbors)
+                    unvisited = unvisited.union(newEmptyNeighbors)
+
         return False
 
 
