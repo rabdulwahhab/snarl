@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 import socket
-from A2 import a2
+import a2
 
 
 def main():
