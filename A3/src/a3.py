@@ -1,11 +1,12 @@
 #!/usr/bin/env python3
 
 import socket
-from A3 import a2
+from A2 import a2
 
 
 def main():
     # Connect to socket
+    global conn, s
     try:
         s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         PORT = 8000
@@ -38,8 +39,6 @@ def main():
     except KeyboardInterrupt:
         print('We have encountered a KeyboardInterrupt error :(')
         s.close()
-    except socket.error as e:
-        print('We have encountered the following socket error :( \n %s' % e)
 
 
 if __name__ == '__main__':

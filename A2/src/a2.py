@@ -97,6 +97,23 @@ def delimSplit(numJsonStr):
     return parsedInputArray
 
 
+def parseNumJsons(parsedNumJsonList, mathFunc):
+    result = []
+    # Loop, compute, format output
+    for strNumJson in parsedNumJsonList:
+        resDict = {"object": strNumJson}
+        jd = json.JSONDecoder()
+        try:
+            data = jd.decode(strNumJson)
+        except:
+            print("Malformed Input...")
+            exit(1)
+        total = calcNumJson(data, mathFunc)
+        resDict["total"] = total
+        result.append(resDict)
+    return result
+
+
 def main():
     def gatherInput():
         rawNumJsonStr = ''
@@ -120,20 +137,7 @@ def main():
 
         # Parse input stream to list of individual NumJSON strings
         parsedNumJsons = delimSplit(inputtedNumJsons)
-        result = []
-
-        # Loop, compute, format output
-        for strNumJson in parsedNumJsons:
-            resDict = {"object": strNumJson}
-            jd = json.JSONDecoder()
-            try:
-                data = jd.decode(strNumJson)
-            except:
-                print("Malformed Input...")
-                exit(1)
-            total = calcNumJson(data, sys.argv[1])
-            resDict["total"] = total
-            result.append(resDict)
+        result = parseNumJsons(parsedNumJsons, sys.argv[1])
 
         print("Processed NumJSONs:")
         print(result)

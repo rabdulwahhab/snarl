@@ -2,7 +2,7 @@
 
 import json
 import sys
-from A3 import a2
+from A2 import a2
 from pprint import pprint
 
 TOWNNETWORK = None
@@ -101,9 +101,13 @@ def main():
             rawInputStr += line.strip()
     except KeyboardInterrupt or EOFError:
         parsedInput = a2.delimSplit(rawInputStr)
+        pprint(parsedInput)
+
         try:
             for givenCommand in parsedInput:
                 jd = json.JSONDecoder()
+                print("Given command:")
+                print(givenCommand)
                 command = jd.decode(givenCommand)
                 execute(command)
         except json.decoder.JSONDecodeError:
