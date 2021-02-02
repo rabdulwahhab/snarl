@@ -74,7 +74,8 @@ class Town:
 
     def getEmptyNeighbors(self):
         """
-        Helper function that returns a set of neighbors that is empty.
+        Helper function that returns a set of neighboring Towns that have
+        no Characters.
         :return: Set of Neighbors
         """
         emptyNeighbors = set()

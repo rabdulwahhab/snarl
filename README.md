@@ -8,5 +8,5 @@ SwDev Spring 2021 project repository for rayyan3 and sfarooqui18
 ### Debug Notes:
 - If `ModuleNotFound`, try checking `PYTHONPATH` and adding proj dir to it
 
-    export PYTHONPATH=$PYTHONPATH:~/Desktop/Alon/...
+    export PYTHONPATH=$PYTHONPATH:.
 
