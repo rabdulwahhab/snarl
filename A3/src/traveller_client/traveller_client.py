@@ -2,6 +2,8 @@
 
 import json
 import sys
+from A3 import a2
+from pprint import pprint
 
 TOWNNETWORK = None
 
@@ -62,6 +64,10 @@ def isPassageSafe(commandParams, townNetwork):
 
 
 def execute(dictCommand: dict):
+    print("In execution. Passed Input parsing. Got:")
+    pprint(dictCommand)
+    exit(0)
+
     NETWORK = None
     jsonKeys = dictCommand.keys()
     wellFormedCommand = "command" in jsonKeys and "params" in jsonKeys
@@ -87,32 +93,24 @@ def execute(dictCommand: dict):
 
 
 def main():
-    def gatherInput():
-        rawJsonStr = ''
+    # Read from STDIN
+    print("Ready for input >")
+    rawInputStr = ""
+    try:
+        for line in sys.stdin:
+            rawInputStr += line.strip()
+    except KeyboardInterrupt or EOFError:
+        parsedInput = a2.delimSplit(rawInputStr)
         try:
-            print('Reading Input >')
-            for line in sys.stdin:
-                if line.strip() == 'exit':
-                    break
-                else:
-                    rawJsonStr = rawJsonStr + ' ' + line.strip()
-            return rawJsonStr
-        except:
-            return rawJsonStr
-
-    while True:
-        # Read from STDIN
-        try:
-            inputCommand = gatherInput()
-            try:
+            for givenCommand in parsedInput:
                 jd = json.JSONDecoder()
-                command = jd.decode(inputCommand)
+                command = jd.decode(givenCommand)
                 execute(command)
-            except:
-                print("Malformed Input...")
-                exit(1)
-        except EOFError:
-            print("Got EOF")
+        except json.decoder.JSONDecodeError:
+            print("Malformed Input...")
+            print("Input Command was:")
+            print("Parsed Input was:")
+            print(parsedInput)
             exit(1)
 
 

@@ -5,10 +5,12 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="9551f33e-9243-48cc-b23a-8218c3c052e2" name="Default Changelist" comment="">
-      <change afterPath="$PROJECT_DIR$/.gitignore" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/A3/__init__.py" beforeDir="false" afterPath="$PROJECT_DIR$/A3/__init__.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/A3/src/numJsonServer.py" beforeDir="false" afterPath="$PROJECT_DIR$/A3/src/numJsonServer.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/A3/src/traveller_client/traveller_client.py" beforeDir="false" afterPath="$PROJECT_DIR$/A3/src/traveller_client/traveller_client.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/A3/src/traveller_server/test_traveller_server.py" beforeDir="false" afterPath="$PROJECT_DIR$/A3/src/traveller_server/test_traveller_server.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/A3/src/traveller_server/traveller_server.py" beforeDir="false" afterPath="$PROJECT_DIR$/A3/src/traveller_server/traveller_server.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/README.md" beforeDir="false" afterPath="$PROJECT_DIR$/README.md" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -35,7 +37,7 @@
     <property name="RunOnceActivity.OpenProjectViewOnStart" value="true" />
     <property name="RunOnceActivity.ShowReadmeOnStart" value="true" />
     <property name="WebServerToolWindowFactoryState" value="false" />
-    <property name="last_opened_file_path" value="$PROJECT_DIR$/A3/src" />
+    <property name="last_opened_file_path" value="$PROJECT_DIR$/A3/src/traveller_client" />
     <property name="node.js.detected.package.eslint" value="true" />
     <property name="node.js.detected.package.tslint" value="true" />
     <property name="node.js.path.for.package.eslint" value="project" />
@@ -46,6 +48,8 @@
   </component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
+      <recent name="$PROJECT_DIR$/A3/src/traveller_client" />
+      <recent name="$PROJECT_DIR$/A3/src/traveller_server" />
       <recent name="$PROJECT_DIR$/A3/src" />
     </key>
   </component>
@@ -103,7 +107,9 @@
       <workItem from="1611972848345" duration="7313000" />
       <workItem from="1612057509663" duration="9334000" />
       <workItem from="1612146420127" duration="5703000" />
-      <workItem from="1612208751745" duration="7998000" />
+      <workItem from="1612208751745" duration="9620000" />
+      <workItem from="1612218874972" duration="1714000" />
+      <workItem from="1612226308667" duration="2979000" />
     </task>
     <servers />
   </component>
@@ -120,6 +126,7 @@
         </entry>
       </map>
     </option>
+    <option name="oldMeFiltersMigrated" value="true" />
   </component>
   <component name="com.intellij.coverage.CoverageDataManagerImpl">
     <SUITE FILE_PATH="coverage/Alon$pytest_for_test_traveller_server_testCanCreateTownNetwork.coverage" NAME="pytest for test_traveller_server.testCanCreateTownNetwork Coverage Results" MODIFIED="1612214676299" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/A3/src/traveller_server" />

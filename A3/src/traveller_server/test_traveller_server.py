@@ -1,8 +1,4 @@
-import pytest
-import sys
-from traveller_server import Town
-from traveller_server import TownNetwork
-from traveller_server import Character
+from traveller_server import Character, Town, TownNetwork
 
 
 def testCanCreateTown():
