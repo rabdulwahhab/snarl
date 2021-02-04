@@ -14,6 +14,7 @@ def server_program():
     # configure how many client the server can listen simultaneously
     server_socket.listen(5)
     conn, address = server_socket.accept()  # accept new connection
+
     print("Connection from: " + str(address))
     while True:
         # receive data stream. it won't accept data packet greater than 1024 bytes
@@ -22,9 +23,9 @@ def server_program():
             # if data is not received break
             break
         print("from connected user: " + str(data))
-        #data = input(' -> ')
-        data = "SERVER: " + data
-        conn.send(data.encode('utf-8'))  # send data to the client
+        serverMsg = input(' -> ')
+        serverMsg = "SERVER: " + serverMsg
+        conn.send(serverMsg.encode('utf-8'))  # send data to the client
 
     conn.close()  # close the connection
 
