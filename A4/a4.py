@@ -10,20 +10,17 @@ PLACEMENT_COMMANDS = []
 
 
 def responseFromServer(data, jsonRequest):
-    jd = json.JSONDecoder()
-    response = jd.decode(data)
+    request = json.loads(jsonRequest)
+    response = json.loads(data)
 
     if len(response["invalid"]) != 0:
         for element in response["invalid"]:
             msg = ["invalid placement", element]
             print(json.dumps(msg))
-    queryBooleanResponse = ["the response for", jsonRequest["query"], "is",
+
+    queryBooleanResponse = ["the response for", request["query"], "is",
                             response["response"]]
     print(json.dumps(queryBooleanResponse))
-
-
-# TODO: respond with boolean, also print invalid placements one by one
-# TODO: validateParams()
 
 
 def createTownNetwork(params: list):

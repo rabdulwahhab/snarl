@@ -24,7 +24,6 @@ def server_program():
             break
         print("from connected user: " + str(data))
         serverMsg = input(' -> ')
-        serverMsg = "SERVER: " + serverMsg
         conn.send(serverMsg.encode('utf-8'))  # send data to the client
 
     conn.close()  # close the connection
