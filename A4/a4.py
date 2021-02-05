@@ -139,36 +139,45 @@ def main():
         sessionId = json.dumps(['the server will call me', userName])
         print(sessionId)
 
-        # Get first command (should be roads)
-        userInput = input("Reading input > ")
-        jd = json.JSONDecoder()
-        commandDict = jd.decode(userInput)
-        if commandDict["command"] == "roads":
-            jsonRequest, toSend, toReceive = parseUserCommand(commandDict)
-            sock.send(jsonRequest.encode("utf-8"))
-        else:
-            print("The first command must be a 'roads' command.")
-            exit(1)
-
+        while True:
+            # Get first command (should be roads)
+            userInput = input("Reading input > ")
+            try:
+                jd = json.JSONDecoder()
+                commandDict = jd.decode(userInput)
+                if commandDict["command"] == "roads":
+                    jsonRequest, toSend, toReceive = parseUserCommand(
+                        commandDict)
+                    sock.send(jsonRequest.encode("utf-8"))
+                    break
+                else:
+                    raise json.JSONDecodeError
+            except json.JSONDecodeError:
+                errorMsg = {"error":  "not a request",
+                            "object": userInput}
+                print(json.dumps(errorMsg))
     except:
-        print("Connection failed during signup + session id exchange")
+        print("Connection closed. Exiting client.")
         exit(1)
 
     # Interaction between client and server (the fun begins)
     while True:
         try:
             userInput = input("Reading input > ")
-            jd = json.JSONDecoder()
-            commandDict = jd.decode(userInput)
-            jsonRequest, toSend, toReceive = parseUserCommand(commandDict)
-            if toSend:
-                sock.send(jsonRequest.encode("utf-8"))
-            if toReceive:
-                data = sock.recv(4096).decode("utf-8")
-                responseFromServer(data, jsonRequest)
-        except json.JSONDecodeError:
-            print("JSON error")
-            exit(1)
+            try:
+                jd = json.JSONDecoder()
+                commandDict = jd.decode(userInput)
+                jsonRequest, toSend, toReceive = parseUserCommand(commandDict)
+                if toSend:
+                    sock.send(jsonRequest.encode("utf-8"))
+                if toReceive:
+                    data = sock.recv(4096).decode("utf-8")
+                    responseFromServer(data, jsonRequest)
+            except json.JSONDecodeError:
+                errorMsg = {"error":  "not a request",
+                            "object": userInput}
+                print(json.dumps(errorMsg))
+                exit(1)
         except:
             print("Connection closed.")
             exit(0)
