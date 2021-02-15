@@ -1,7 +1,7 @@
 import pygame
-from pygame.locals import *
-from Snarl.src.Enums import TileEnum, Colors
+from Snarl.src.Enums import TileEnum
 from Snarl.src.DevTools import logInFile
+from Snarl.src.Util import Colors, Globals
 
 
 # pygame.init() to initalize all modules. inidividiual ones can be picked
@@ -27,7 +27,7 @@ def renderLevel(background: pygame.Surface, level, boardNumber):
     :param boardNumber:
     :return:
     """
-    log = logInFile("render.py", "renderLevel")
+    log = logInFile("Render.py", "renderLevel")
 
     board = level["boards"][boardNumber]
     boardTiles = board["tiles"]
@@ -35,7 +35,9 @@ def renderLevel(background: pygame.Surface, level, boardNumber):
     for tile in boardTiles:
         location = tile["location"]
         log(str(location))
-        x, y = (location[0] * 50, location[1] * 50)
-        tileRect = pygame.Rect(x, y, 50.0, 50.0)
+        x, y = (
+            location[0] * Globals.TILE_WIDTH, location[1] * Globals.TILE_HEIGHT)
+        tileRect = pygame.Rect(x, y, Globals.TILE_WIDTH, Globals.TILE_HEIGHT)
         tileColor = getTileColor(tile)
+        # can use (x, y, width, height) tuple rather than rect
         pygame.draw.rect(background, tileColor, tileRect)

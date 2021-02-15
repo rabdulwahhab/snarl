@@ -3,7 +3,10 @@ from functools import partial, reduce
 
 def log(*args):
     out = reduce(lambda acc, s: acc + " " + s, args)
-    print("log {}".format(out))
+    color = '\033[106m'
+    nocolor = '\033[0m'
+    print("{color}log{nocolor} {out}".format(color=color, out=out,
+                                             nocolor=nocolor))
 
 
 def logInFile(fileName, fnName="-"):

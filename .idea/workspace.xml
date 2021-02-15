@@ -5,7 +5,16 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="9551f33e-9243-48cc-b23a-8218c3c052e2" name="Default Changelist" comment="">
-      <change beforePath="$PROJECT_DIR$/.gitignore" beforeDir="false" afterPath="$PROJECT_DIR$/.gitignore" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Snarl/run.sh" beforeDir="false" afterPath="$PROJECT_DIR$/Snarl/run.sh" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Snarl/src/Creation/__init__.py" beforeDir="false" afterPath="$PROJECT_DIR$/Snarl/src/Creation/__init__.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Snarl/src/DevTools/log.py" beforeDir="false" afterPath="$PROJECT_DIR$/Snarl/src/DevTools/log.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Snarl/src/Enums/Colors.py" beforeDir="false" afterPath="$PROJECT_DIR$/Snarl/src/Util/Colors.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Snarl/src/Enums/__init__.py" beforeDir="false" afterPath="$PROJECT_DIR$/Snarl/src/Enums/__init__.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Snarl/src/Render/__init__.py" beforeDir="false" afterPath="$PROJECT_DIR$/Snarl/src/Render/__init__.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Snarl/src/Render/render.py" beforeDir="false" afterPath="$PROJECT_DIR$/Snarl/src/Render/Render.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Snarl/src/Util/__init__.py" beforeDir="false" afterPath="$PROJECT_DIR$/Snarl/src/Util/__init__.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Snarl/src/main.py" beforeDir="false" afterPath="$PROJECT_DIR$/Snarl/src/main.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -49,13 +58,16 @@
     <property name="node.js.path.for.package.tslint" value="project" />
     <property name="node.js.selected.package.eslint" value="(autodetect)" />
     <property name="node.js.selected.package.tslint" value="(autodetect)" />
-    <property name="settings.editor.selected.configurable" value="preferences.editor.code.editing" />
+    <property name="settings.editor.selected.configurable" value="editor.preferences.fonts.default" />
   </component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
       <recent name="$PROJECT_DIR$/A3/src" />
       <recent name="$PROJECT_DIR$/A3/src/traveller_client" />
       <recent name="$PROJECT_DIR$/A3/src/traveller_server" />
+    </key>
+    <key name="MoveFile.RECENT_KEYS">
+      <recent name="$PROJECT_DIR$/Snarl/src/Util" />
     </key>
   </component>
   <component name="RunManager" selected="Python tests.pytest for test_traveller_server.testCanCreateTownNetwork">
@@ -117,7 +129,10 @@
       <workItem from="1612226308667" duration="9161000" />
       <workItem from="1612400740613" duration="10238000" />
       <workItem from="1613181619893" duration="1381000" />
-      <workItem from="1613183040528" duration="9961000" />
+      <workItem from="1613183040528" duration="10101000" />
+      <workItem from="1613202314726" duration="1250000" />
+      <workItem from="1613270592729" duration="8487000" />
+      <workItem from="1613360141623" duration="874000" />
     </task>
     <servers />
   </component>
@@ -135,6 +150,16 @@
       </map>
     </option>
     <option name="oldMeFiltersMigrated" value="true" />
+  </component>
+  <component name="XDebuggerManager">
+    <breakpoint-manager>
+      <breakpoints>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/Snarl/src/Util/utils.py</url>
+          <option name="timeStamp" value="2" />
+        </line-breakpoint>
+      </breakpoints>
+    </breakpoint-manager>
   </component>
   <component name="com.intellij.coverage.CoverageDataManagerImpl">
     <SUITE FILE_PATH="coverage/Alon$pytest_for_test_traveller_server_testCanCreateTownNetwork.coverage" NAME="pytest for test_traveller_server.testCanCreateTownNetwork Coverage Results" MODIFIED="1612214676299" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/A3/src/traveller_server" />
