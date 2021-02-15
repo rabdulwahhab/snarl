@@ -1,2 +1,2 @@
 from .demoLevel import level
-from .Create import createDungeon
+from .Create import createGenericDungeon

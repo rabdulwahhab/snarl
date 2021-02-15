@@ -1,4 +1,4 @@
 #!/bin/bash
 
 export PYTHONPATH=$PYTHONPATH:.
-python Snarl/src/main.py
+python3 Snarl/src/main.py

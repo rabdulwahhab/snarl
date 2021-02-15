@@ -1,8 +1,8 @@
 import pygame
 import sys
 from pygame.locals import *
-from Creation import level
-from Render import renderLevel
+from Creation import level, createGenericDungeon
+from Render import renderDungeon
 from DevTools import logInFile
 from Util import Globals
 
@@ -21,19 +21,20 @@ def main():
     background = background.convert()  # converts Surface to single-pixel format
     background.fill(Globals.BG_COLOR)
 
-    # test drawing
-    renderLevel(background, level, 0)
+    # test dungeon
+    dung = createGenericDungeon()
 
     # Event loop
     while True:
         # pygame.time.wait(250)
         clock.tick(30)  # cap at 30fps
-        for ev in pygame.event.get():
-            if ev.type == QUIT:
+        for event in pygame.event.get():
+            if event.type == QUIT:
                 sys.exit(0)
 
         # map of keys pressed
         # keys = pygame.key.get_pressed()
+        renderDungeon(background, dung)
 
         screen.blit(background, (0, 0))  # render pixels to
         pygame.display.update()  # update

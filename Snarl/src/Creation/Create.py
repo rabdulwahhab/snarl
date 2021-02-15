@@ -1,17 +1,11 @@
 from random import randint
 from Snarl.src.Util import Globals
 from Snarl.src.Util import utils
-from Snarl.src.Enums.GamePieces import Level, Tile, Board, Dungeon, Enemy, Item, Player
+from Snarl.src.Enums.GamePieceTypes import Level, Tile, Board, Dungeon, Enemy, Item, Player
 from Snarl.src.Enums import BoardEnum, TileEnum
 
-"""
-tileType -> TileEnum
-location -> (X, Y)
 
-"""
-
-
-def createRoomTiles():
+def createGenericRoomTiles():
     roomWidth = Globals.GAME_WIDTH - 1
     roomHeight = Globals.GAME_HEIGHT - 1
     roomTiles = []
@@ -24,7 +18,7 @@ def createRoomTiles():
 
 def createGenericRoom():
     boardType = BoardEnum.ROOM
-    tiles = createRoomTiles()
+    tiles = createGenericRoomTiles()
     room = Board(tiles, boardType, {}, [], [])
     return room
 
@@ -37,5 +31,9 @@ def createGenericLevel():
     return level
 
 
-def createDungeion():
-    level= createGenericLevel()
+def createGenericDungeon():
+    name = "Super Generic Dungeon"
+    level = createGenericLevel()
+    player = Player("Saleha", (0, 0))
+    dungeon = Dungeon(name, [level], [player], 0, 0, False)
+    return dungeon

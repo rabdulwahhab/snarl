@@ -1,10 +1,10 @@
 class Dungeon:
-    def __init__(self, name, levels, players, currLevel, currRoom, isGameOver):
+    def __init__(self, name, levels, players, currLevel, currBoard, isGameOver):
         self.name = name
         self.levels = levels
         self.players = players
         self.currLevel = currLevel
-        self.currRoom = currRoom
+        self.currBoard = currBoard
         self.isGameOver = isGameOver
 
 
@@ -19,17 +19,17 @@ class Level:
 
 
 class Board:
-    def __init__(self, tiles, type, players, enemies, items):
+    def __init__(self, tiles, boardType, players, enemies, items):
         self.tiles = tiles
-        self.type = type
+        self.boardType = boardType
         self.players = players
         self.enemies = enemies
         self.items = items
 
 
 class Tile:
-    def __init__(self, type, location):
-        self.type = type
+    def __init__(self, tileType, location):
+        self.tileType = tileType
         self.location = location
 
 

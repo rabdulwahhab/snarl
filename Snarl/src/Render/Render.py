@@ -1,12 +1,12 @@
 import pygame
 from Snarl.src.Enums import TileEnum
 from Snarl.src.DevTools import logInFile
-from Snarl.src.Util import Colors, Globals
+from Snarl.src.Util import Colors, Globals, getScreenLocation
+from Snarl.src.Enums import *
+from typing import Union
 
 
-# pygame.init() to initalize all modules. inidividiual ones can be picked
-
-def getTileColor(tile):
+def getTileColor(tile: Tile):
     if tile["type"] == TileEnum.WALL:
         return Colors.WALL
     elif tile["type"] == TileEnum.DOOR:
@@ -19,7 +19,59 @@ def getTileColor(tile):
         return Colors.GROUND
 
 
-def renderLevel(background: pygame.Surface, level, boardNumber):
+def renderTile(background: pygame.Surface, tile):
+    x, y = getScreenLocation(tile.location)
+    tileRect = pygame.Rect(x, y, Globals.TILE_WIDTH, Globals.TILE_HEIGHT)
+    tileColor = getTileColor(tile)
+    pygame.draw.rect(background, tileColor, tileRect)
+
+
+def renderCreature(background: pygame.Surface, creature: Union[Player, Enemy]):
+    x, y = getScreenLocation(creature.location)
+    tileRect = pygame.Rect(x, y, Globals.TILE_WIDTH, Globals.TILE_HEIGHT)
+    tileColor = Colors.GROUND
+    font = pygame.font.SysFont('courier', 14)
+    font.render(creature.name[0], 1, Colors.ENEMY, tileRect)
+    pygame.draw.rect(background, tileColor, tileRect)
+
+
+def renderEnemies(background: pygame.Surface, enemies):
+    for enemy in enemies:
+        renderCreature(background, enemy)
+
+
+def renderPlayers(background: pygame.Surface, players):
+    playerNames = players.keys()
+    for name in playerNames:
+        player = players[name]
+        renderCreature(background, player)
+
+
+def renderItems(background: pygame.Surface, items):
+    for item in items:
+        if not item.hasBeenAcquired:
+            renderItem(background, item)
+
+
+def renderItem(background: pygame.Surface, item: Item):
+    x, y = getScreenLocation(item.location)
+    tileRect = pygame.Rect(x, y, Globals.TILE_WIDTH, Globals.TILE_HEIGHT)
+    tileColor = Colors.GROUND
+    font = pygame.font.SysFont('courier', 14)
+    font.render("*", 1, Colors.ITEM, tileRect)
+    pygame.draw.rect(background, tileColor, tileRect)
+
+
+def renderBoard(background: pygame.Surface, board: Board):
+    for tile in board.tiles:
+        renderTile(background, tile)
+
+    renderPlayers(background, board.players)
+    renderEnemies(background, board.enemies)
+    renderItems(background, board.items)
+
+
+def renderLevel(background: pygame.Surface, level: Level, boardNumber):
     """
     Render the board in the level at the given board number onto the background.
     :param background:
@@ -28,16 +80,11 @@ def renderLevel(background: pygame.Surface, level, boardNumber):
     :return:
     """
     log = logInFile("Render.py", "renderLevel")
+    log("")
+    board = level.boards[boardNumber]
+    renderBoard(background, board)
 
-    board = level["boards"][boardNumber]
-    boardTiles = board["tiles"]
 
-    for tile in boardTiles:
-        location = tile["location"]
-        log(str(location))
-        x, y = (
-            location[0] * Globals.TILE_WIDTH, location[1] * Globals.TILE_HEIGHT)
-        tileRect = pygame.Rect(x, y, Globals.TILE_WIDTH, Globals.TILE_HEIGHT)
-        tileColor = getTileColor(tile)
-        # can use (x, y, width, height) tuple rather than rect
-        pygame.draw.rect(background, tileColor, tileRect)
+def renderDungeon(background: pygame.Surface, dungeon: Dungeon):
+    renderLevel(background, dungeon.levels[dungeon.currLevel],
+                dungeon.currBoard)
