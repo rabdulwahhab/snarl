@@ -1,5 +1,18 @@
-from Snarl.src.Util import Globals
+import Globals
 from random import randint
+from functools import partial, reduce
+
+
+def log(*args):
+    out = reduce(lambda acc, s: acc + " " + s, args)
+    color = '\033[106m'
+    nocolor = '\033[0m'
+    print("{color}log{nocolor} {out}".format(color=color, out=out,
+                                             nocolor=nocolor))
+
+
+def logInFile(fileName, fnName="-"):
+    return partial(log, "[{file}] {fn} >>>>".format(file=fileName, fn=fnName))
 
 
 # TODO: function that generates a random coord between WIDTH and HEIGHT that is
@@ -18,7 +31,7 @@ def genUniqueCoord():
 
     while len(alreadyCreated) != Globals.GAME_HEIGHT * Globals.GAME_WIDTH:
         newCoord = (
-        randint(0, Globals.GAME_WIDTH), randint(0, Globals.GAME_HEIGHT))
+            randint(0, Globals.GAME_WIDTH), randint(0, Globals.GAME_HEIGHT))
         if newCoord not in alreadyCreated:
             alreadyCreated.add(newCoord)
             yield newCoord
@@ -45,12 +58,12 @@ def genDoorCoords(roomWidth, roomHeight):
 
 
 def genXRandCoords(numRandCoord, rejectCoords):
-    newCoordinates = {}
-
+    newCoordinates = set()
     i = 0
+
     while i < numRandCoord:
         newCoord = (
-        randint(0, Globals.GAME_WIDTH), randint(0, Globals.GAME_HEIGHT))
+            randint(0, Globals.GAME_WIDTH), randint(0, Globals.GAME_HEIGHT))
         if newCoord not in newCoordinates and (newCoord not in rejectCoords):
             newCoordinates.add(newCoord)
             i += 1

@@ -1,10 +1,10 @@
 import pygame
 import sys
 from pygame.locals import *
-from Creation import level, createGenericDungeon
+from Create import createGenericDungeon
 from Render import renderDungeon
-from DevTools import logInFile
-from Util import Globals
+from Util import logInFile
+import Globals
 
 log = logInFile("main.py")
 
@@ -23,6 +23,7 @@ def main():
 
     # test dungeon
     dung = createGenericDungeon()
+    renderDungeon(background, dung)
 
     # Event loop
     while True:
@@ -34,7 +35,6 @@ def main():
 
         # map of keys pressed
         # keys = pygame.key.get_pressed()
-        renderDungeon(background, dung)
 
         screen.blit(background, (0, 0))  # render pixels to
         pygame.display.update()  # update

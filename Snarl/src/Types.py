@@ -1,3 +1,19 @@
+from enum import Enum
+
+
+class BoardEnum(Enum):
+    ROOM = 1
+    HALLWAY = 2
+
+
+class TileEnum(Enum):
+    DEFAULT = 1
+    WALL = 2
+    GRASS = 3
+    DOOR = 4
+    STAIR = 5
+
+
 class Dungeon:
     def __init__(self, name, levels, players, currLevel, currBoard, isGameOver):
         self.name = name
@@ -28,9 +44,10 @@ class Board:
 
 
 class Tile:
-    def __init__(self, tileType, location):
+    def __init__(self, tileType, location, hasKey):
         self.tileType = tileType
         self.location = location
+        self.hasKey = hasKey
 
 
 class Player:
