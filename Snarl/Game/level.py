@@ -1,48 +1,4 @@
-from enum import Enum
-
-
-class BoardEnum(Enum):
-    ROOM = 1
-    HALLWAY = 2
-
-
-class TileEnum(Enum):
-    DEFAULT = 1
-    WALL = 2
-    GRASS = 3
-    DOOR = 4
-    STAIR = 5
-
-
-class Level:
-    def __init__(self, keyLocation, exitLocation, boards, exitUnlocked,
-                 playerTurn):
-        self.keyLocation = keyLocation  # (x, y)
-        self.exitLocation = exitLocation  # (x, y)
-        self.boards = boards
-        self.exitUnlocked = exitUnlocked
-        self.playerTurn = playerTurn  # Int
-
-
-class Board:
-    def __init__(self, tiles, upperLeftCorner, dimensions, boardType,
-                 doorLocations, players, enemies, items):
-        self.tiles = tiles
-        self.upperLeftCorner = upperLeftCorner  # (x, y)
-        self.dimensions = dimensions  # (width, height)
-        self.boardType = boardType
-        self.doorLocations = doorLocations
-        self.players = players
-        self.enemies = enemies
-        self.items = items
-
-
-class Tile:
-    def __init__(self, tileType, location, hasKey):
-        self.tileType = tileType
-        self.location = location  # (x, y)
-        self.hasKey = hasKey
-
+from Types import *
 
 ### Demo Level
 
