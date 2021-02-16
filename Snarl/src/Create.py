@@ -2,6 +2,8 @@ import Globals
 import Util
 from Types import *
 from random import randint
+from more_itertools import interleave, collapse, all_unique
+from functools import reduce
 
 # TODO Demo Level ---------------------
 
@@ -42,15 +44,38 @@ t9 = {'type': TileEnum.WALL, 'location': (2, 2), 'hasKey': False}
 
 # ---------------------------
 
-def createBoards(numBoards, dimensions):
+def validateLevels(level: Level):
+    allBoardTiles = reduce(lambda acc, board: list(collapse(acc, board.tiles)),
+                           level.boards)
+    return all_unique(allBoardTiles) and checkHallways(level.boards)
+
+
+def checkHallways(boards):
+    # if hallway, check if door locations are at board dimensions
+    #   and check if door locations are in
+    for board in boards:
+        if board.boardType == BoardEnum.HALLWAY:
+            if len(board.doorLocations) <= 2:
+                return False
+    return True
+
+
+# GIANT TODO
+def createBoards(corners, dimensions):
     (levelWidth, levelHeight) = dimensions
+    # todo do math to determine boundaries of each
+    rooms = createRooms(numRooms, (levelWidth, levelHeight))
+    hallways = createHallways(numHallways, (levelWidth, levelHeight))
+    boards = interleave(rooms, hallways)
+    return boards
 
 
 def createPlayer(playerName, location):
     return Player(playerName, location)
 
 
-def createLevel(numRooms, numHallways):
+def createLevel(numRooms):
+    numHallways = randint(0, numRooms - 1)
     numBoards = numRooms + numHallways
     maxLevelWidth = Globals.GAME_WIDTH * numBoards
     maxLevelHeight = Globals.GAME_HEIGHT * numBoards
@@ -62,9 +87,7 @@ def createLevel(numRooms, numHallways):
     keyLocation = Util.genXRandCoords(1, {(0, 0)}, (levelWidth, levelHeight))
     exitLocation = Util.genXRandCoords(1, {(0, 0), keyLocation},
                                        (levelWidth, levelHeight))
-    rooms = createRooms(numRooms, (levelWidth, levelHeight))
-    hallways = createHallways(numHallways, (levelWidth, levelHeight))
-
+    boards = createBoards(numRooms, numHallways, (levelWidth, levelHeight))
     return Level(keyLocation, exitLocation, boards, False, 0)
 
 
@@ -97,7 +120,7 @@ def createGenericRoom():
 def createGenericLevel():
     exitLocation = Util.genDoorCoords(Globals.GAME_WIDTH, Globals.GAME_HEIGHT)
     keyLocation = Util.genXRandCoords(1, {exitLocation})
-    boards = [createGenericRoom()]
+    boards = [createGenericBoards()]
     level = Level(keyLocation, exitLocation, boards, False, 0)
     return level
 

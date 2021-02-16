@@ -34,8 +34,11 @@ class Level:
 
 
 class Board:
-    def __init__(self, tiles, boardType, doorLocations, players, enemies, items):
+    def __init__(self, tiles, upperLeftCorner, dimensions, boardType,
+                 doorLocations, players, enemies, items):
         self.tiles = tiles
+        self.upperLeftCorner = upperLeftCorner
+        self.dimensions = dimensions  # (width, height)
         self.boardType = boardType
         self.doorLocations = doorLocations
         self.players = players
