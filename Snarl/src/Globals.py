@@ -1,8 +1,8 @@
 import pygame
 from math import floor
 
-SCREEN_WIDTH = 650  # in pixels
-SCREEN_HEIGHT = 500
+SCREEN_WIDTH = 800  # in pixels
+SCREEN_HEIGHT = 600
 SCREEN_DIMENSIONS = (SCREEN_WIDTH, SCREEN_HEIGHT)
 BG_COLOR = (255, 255, 255)  # white...boring
 

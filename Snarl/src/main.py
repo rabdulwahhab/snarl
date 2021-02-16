@@ -1,10 +1,11 @@
 import pygame
 import sys
 from pygame.locals import *
-from Create import createGenericDungeon
-from Render import renderDungeon
+from Create import createDungeon
+from Render import renderDungeon, renderLevel
 from Util import logInFile
 import Globals
+from examples import exampleLevel
 
 log = logInFile("main.py")
 
@@ -21,9 +22,8 @@ def main():
     background = background.convert()  # converts Surface to single-pixel format
     background.fill(Globals.BG_COLOR)
 
-    # test dungeon
-    dung = createGenericDungeon()
-    renderDungeon(background, dung)
+    # render example level
+    renderLevel(background, exampleLevel, 0)
 
     # Event loop
     while True:
