@@ -1,7 +1,7 @@
 import pygame
 import Colors
 import Globals
-from Util import getScreenLocation, logInFile
+from Util import getScreenLocation, logInFile, formatInitial
 from Types import *
 
 
@@ -32,13 +32,12 @@ def renderEnemy(background: pygame.Surface, enemy: Enemy):
     x, y = getScreenLocation(enemy.location)
     tileRect = pygame.Rect(x, y, Globals.TILE_WIDTH, Globals.TILE_HEIGHT)
     tileColor = Colors.ENEMY
-    # TODO fonts slow
-    # font = pygame.font.SysFont('courier', 12)
     log = logInFile("Render.py", "renderEnemy")
     log(enemy.name)
-    # enemyLetter = font.render(enemy.name[0], False, tileColor)
-    pygame.draw.rect(background, tileColor, tileRect)
-    # background.blit(enemyLetter, tileRect.center)
+    enemyLetter = Globals.FONT.render(formatInitial(enemy.name), True,
+                                      Colors.WHITE)
+    # pygame.draw.rect(background, tileColor, tileRect)
+    background.blit(enemyLetter, tileRect.topleft)
 
 
 def renderEnemies(background: pygame.Surface, enemies):
@@ -52,13 +51,13 @@ def renderPlayer(background: pygame.Surface, player: Player):
     x, y = getScreenLocation(player.location)
     tileRect = pygame.Rect(x, y, Globals.TILE_WIDTH, Globals.TILE_HEIGHT)
     tileColor = Colors.PLAYER
-    # TODO Fonts slow down the loading significantly
-    # font = pygame.font.SysFont('arial', Globals.TILE_WIDTH)
+    # TODO Fonts slow down the loading
     log = logInFile("Render.py", "renderPlayer")
     log(player.name)
-    # playerLetter = font.render(player.name[0], True, (0, 0, 0)) # TODO font color
-    pygame.draw.rect(background, tileColor, tileRect)
-    # background.blit(playerLetter, tileRect.center)
+    playerLetter = Globals.FONT.render(formatInitial(player.name), True,
+                                       Colors.BLACK)  # TODO font color
+    # pygame.draw.rect(background, tileColor, tileRect)
+    background.blit(playerLetter, tileRect.topleft)
 
 
 def renderPlayers(background: pygame.Surface, players):
@@ -74,9 +73,10 @@ def renderItem(background: pygame.Surface, item: Item):
     x, y = getScreenLocation(item.location)
     tileRect = pygame.Rect(x, y, Globals.TILE_WIDTH, Globals.TILE_HEIGHT)
     tileColor = Colors.GROUND
-    font = pygame.font.SysFont('courier', 12)
-    font.render("*", False, Colors.ITEM)
-    pygame.draw.rect(background, tileColor, tileRect)
+    itemLetter = Globals.FONT.render(formatInitial(item.name), True,
+                                     Colors.ITEM)
+    # pygame.draw.rect(background, tileColor, tileRect)
+    background.blit(itemLetter, tileRect.topleft)
 
 
 def renderItems(background: pygame.Surface, items):

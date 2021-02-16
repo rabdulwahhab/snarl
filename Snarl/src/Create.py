@@ -1,6 +1,7 @@
 import Globals
 import Util
 from Types import *
+from random import randint
 
 # TODO Demo Level ---------------------
 
@@ -14,6 +15,7 @@ t6 = {'type': TileEnum.WALL, 'location': (1, 2), 'hasKey': False}
 t7 = {'type': TileEnum.DEFAULT, 'location': (2, 0), 'hasKey': False}
 t8 = {'type': TileEnum.DEFAULT, 'location': (2, 1), 'hasKey': False}
 t9 = {'type': TileEnum.WALL, 'location': (2, 2), 'hasKey': False}
+
 
 # demoTiles = [t1, t2, t3, t4, t5, t6, t7, t8, t9]
 #
@@ -40,14 +42,43 @@ t9 = {'type': TileEnum.WALL, 'location': (2, 2), 'hasKey': False}
 
 # ---------------------------
 
+def createBoards(numBoards, dimensions):
+    (levelWidth, levelHeight) = dimensions
+
+
+def createPlayer(playerName, location):
+    return Player(playerName, location)
+
+
+def createLevel(numRooms, numHallways):
+    numBoards = numRooms + numHallways
+    maxLevelWidth = Globals.GAME_WIDTH * numBoards
+    maxLevelHeight = Globals.GAME_HEIGHT * numBoards
+    minLevelWidth = Globals.GAME_WIDTH * (numBoards - 1)
+    minLevelHeight = Globals.GAME_HEIGHT * (numBoards - 1)
+    levelWidth = randint(minLevelWidth, maxLevelWidth)
+    levelHeight = randint(minLevelHeight, maxLevelHeight)
+    # TODO key excluded locations (player, wall, door, etc.)
+    keyLocation = Util.genXRandCoords(1, {(0, 0)}, (levelWidth, levelHeight))
+    exitLocation = Util.genXRandCoords(1, {(0, 0), keyLocation},
+                                       (levelWidth, levelHeight))
+    rooms = createRooms(numRooms, (levelWidth, levelHeight))
+    hallways = createHallways(numHallways, (levelWidth, levelHeight))
+
+    return Level(keyLocation, exitLocation, boards, False, 0)
+
+
 def createGenericRoomTiles():
     roomWidth = Globals.GAME_WIDTH
     roomHeight = Globals.GAME_HEIGHT
+    doorLocation = (roomWidth - 1, roomHeight - 1)
     roomTiles = []
     for i in range(roomWidth):
         for j in range(roomHeight):
-            getsKey = True if i == 0 and j == 0 else False
-            newTile = Tile(TileEnum.GRASS, (i, j), getsKey)
+            getsKey = True if i == 0 and j == 0 else False  # TODO remove
+            tileType = TileEnum.DOOR if (i,
+                                         j) == doorLocation else TileEnum.DEFAULT
+            newTile = Tile(tileType, (i, j), getsKey)
             roomTiles.append(newTile)
     return roomTiles
 
@@ -57,7 +88,9 @@ def createGenericRoom():
     tiles = createGenericRoomTiles()
     player = Player("Saleha", (3, 3))
     enemy = Enemy("Big Monster", (2, 2))
-    room = Board(tiles, boardType, {"Saleha": player}, [enemy], [])
+    item = Item("Potion", (5, 1), False)
+    room = Board(tiles, boardType, [(0, 0)], {"Saleha": player}, [enemy],
+                 [item])
     return room
 
 
@@ -69,8 +102,16 @@ def createGenericLevel():
     return level
 
 
-def createGenericDungeon():
-    name = "Super Generic Dungeon"
-    level = createGenericLevel()
-    dungeon = Dungeon(name, [level], ["Saleha"], 0, 0, False)
+def createDungeon(playerName, numLevels):
+    """
+    Creates a Dungeon with numLevels and create the Player with playerName in
+    the first level.
+    :param playerName: Str
+    :param numLevels: Int
+    :return: Dungeon
+    """
+    # TODO numRooms and numHallways (random gen)
+    levels = [createLevel(2, 1) for i in numLevels]
+    players = [createPlayer(playerName)]
+    dungeon = Dungeon(levels, players, 0, 0, False)
     return dungeon

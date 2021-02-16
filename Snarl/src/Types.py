@@ -15,8 +15,7 @@ class TileEnum(Enum):
 
 
 class Dungeon:
-    def __init__(self, name, levels, players, currLevel, currBoard, isGameOver):
-        self.name = name
+    def __init__(self, levels, players, currLevel, currBoard, isGameOver):
         self.levels = levels
         self.players = players
         self.currLevel = currLevel
@@ -35,9 +34,10 @@ class Level:
 
 
 class Board:
-    def __init__(self, tiles, boardType, players, enemies, items):
+    def __init__(self, tiles, boardType, doorLocations, players, enemies, items):
         self.tiles = tiles
         self.boardType = boardType
+        self.doorLocations = doorLocations
         self.players = players
         self.enemies = enemies
         self.items = items

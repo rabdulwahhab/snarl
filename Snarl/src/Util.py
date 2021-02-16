@@ -57,13 +57,13 @@ def genDoorCoords(roomWidth, roomHeight):
     return newCoord
 
 
-def genXRandCoords(numRandCoord, rejectCoords):
+def genXRandCoords(numRandCoord, rejectCoords, dimensions):
     newCoordinates = set()
+    (maxWidth, maxHeight) = dimensions
     i = 0
 
     while i < numRandCoord:
-        newCoord = (
-            randint(0, Globals.GAME_WIDTH), randint(0, Globals.GAME_HEIGHT))
+        newCoord = (randint(0, maxWidth), randint(0, maxHeight))
         if newCoord not in newCoordinates and (newCoord not in rejectCoords):
             newCoordinates.add(newCoord)
             i += 1
@@ -72,3 +72,7 @@ def genXRandCoords(numRandCoord, rejectCoords):
 
 def getScreenLocation(location):
     return location[0] * Globals.TILE_WIDTH, location[1] * Globals.TILE_HEIGHT
+
+
+def formatInitial(name):
+    return " {} ".format(name[0])
