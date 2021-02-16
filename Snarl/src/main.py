@@ -26,18 +26,18 @@ def main():
     renderLevel(background, exampleLevel, 0)
 
     # Event loop
-    while True:
-        # pygame.time.wait(250)
-        clock.tick(30)  # cap at 30fps
-        for event in pygame.event.get():
-            if event.type == QUIT:
-                sys.exit(0)
-
-        # map of keys pressed
-        # keys = pygame.key.get_pressed()
-
-        screen.blit(background, (0, 0))  # render pixels to
-        pygame.display.update()  # update
+    # while True:
+    #     # pygame.time.wait(250)
+    #     clock.tick(30)  # cap at 30fps
+    #     for event in pygame.event.get():
+    #         if event.type == QUIT:
+    #             sys.exit(0)
+    #
+    #     # map of keys pressed
+    #     # keys = pygame.key.get_pressed()
+    #
+    #     screen.blit(background, (0, 0))  # render pixels to
+    #     pygame.display.update()  # update
 
 
 if __name__ == '__main__':

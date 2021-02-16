@@ -2,13 +2,13 @@ import Globals
 import Util
 from Types import *
 from random import randint
-from more_itertools import interleave, collapse, all_unique
+from more_itertools import interleave, flatten, all_unique
 from functools import reduce
 
 
 def validateLevels(level: Level):
-    allBoardTiles = reduce(lambda acc, board: list(collapse(acc, board.tiles)),
-                           level.boards)
+    allBoardTiles = reduce(lambda acc, board: list(flatten([acc, board.tiles])),
+                           level.boards, [])
     return all_unique(allBoardTiles) and checkHallways(level.boards)
 
 
@@ -17,7 +17,7 @@ def checkHallways(boards):
     #   and check if door locations are in
     for board in boards:
         if board.boardType == BoardEnum.HALLWAY:
-            if len(board.doorLocations) <= 2:
+            if len(board.doorLocations) < 2:
                 return False
     return True
 

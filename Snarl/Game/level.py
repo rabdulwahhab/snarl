@@ -1,6 +1,50 @@
-# Demo game pieces and types
+from enum import Enum
 
-from Types import *
+
+class BoardEnum(Enum):
+    ROOM = 1
+    HALLWAY = 2
+
+
+class TileEnum(Enum):
+    DEFAULT = 1
+    WALL = 2
+    GRASS = 3
+    DOOR = 4
+    STAIR = 5
+
+
+class Level:
+    def __init__(self, keyLocation, exitLocation, boards, exitUnlocked,
+                 playerTurn):
+        self.keyLocation = keyLocation  # (x, y)
+        self.exitLocation = exitLocation  # (x, y)
+        self.boards = boards
+        self.exitUnlocked = exitUnlocked
+        self.playerTurn = playerTurn  # Int
+
+
+class Board:
+    def __init__(self, tiles, upperLeftCorner, dimensions, boardType,
+                 doorLocations, players, enemies, items):
+        self.tiles = tiles
+        self.upperLeftCorner = upperLeftCorner  # (x, y)
+        self.dimensions = dimensions  # (width, height)
+        self.boardType = boardType
+        self.doorLocations = doorLocations
+        self.players = players
+        self.enemies = enemies
+        self.items = items
+
+
+class Tile:
+    def __init__(self, tileType, location, hasKey):
+        self.tileType = tileType
+        self.location = location  # (x, y)
+        self.hasKey = hasKey
+
+
+### Demo Level
 
 # Room 1 Tiles
 r1tw1 = Tile(TileEnum.WALL, (0, 0), False)
@@ -94,7 +138,8 @@ room2Tiles = [r2tw1, r2tw2, r2tw3, r2tw4, r2tw5, r2tw6, r2tw7, r2tw8, r2tw9,
               r2t10, r2t11]
 
 room1 = Board(room1Tiles, (0, 0), (5, 5), BoardEnum.ROOM, [(4, 3)], {}, [], [])
-hallway = Board(hallwayTiles, (5, 0), (5, 5), BoardEnum.HALLWAY, [(4, 3), (0, 3)], {}, [], [])
+hallway = Board(hallwayTiles, (5, 0), (5, 5), BoardEnum.HALLWAY,
+                [(4, 3), (0, 3)], {}, [], [])
 room2 = Board(room2Tiles, (10, 0), (5, 5), BoardEnum.ROOM, [(0, 3)], {}, [], [])
 
 # Example level
