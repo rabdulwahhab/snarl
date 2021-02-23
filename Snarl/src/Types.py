@@ -43,7 +43,7 @@ class Board:
         self.boardType = boardType
         self.doorLocations = doorLocations
         self.players = {}
-        self.enemies = []
+        self.enemies = {}
         self.items = None
 
 
