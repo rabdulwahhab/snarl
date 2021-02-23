@@ -20,7 +20,6 @@ class Dungeon:
         self.levels = levels
         self.players = players
         self.currLevel = currLevel
-        self.currBoard = currBoard
         self.isGameOver = isGameOver
 
 
@@ -32,6 +31,7 @@ class Level:
         self.boards = boards
         self.exitUnlocked = exitUnlocked
         self.playerTurn = playerTurn
+        self.currBoard = 0
 
 
 class Board:

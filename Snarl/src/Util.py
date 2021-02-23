@@ -70,6 +70,14 @@ def genXRandCoords(numRandCoord, rejectCoords, dimensions):
     return newCoordinates
 
 
+# TODO test
+def locationInBounds(location: tuple, origin: tuple, dimension: tuple):
+    x, y = location
+    ox, oy = origin
+    mx, my = (origin[0] + dimension[0], origin[1] + dimension[1])
+    return ox <= x < mx and oy <= y < my
+
+
 def getScreenLocation(location):
     return location[0] * Globals.TILE_WIDTH, location[1] * Globals.TILE_HEIGHT
 
