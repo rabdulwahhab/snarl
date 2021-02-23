@@ -97,5 +97,5 @@ room1 = Board(room1Tiles, (0, 0), (5, 5), BoardEnum.ROOM, [(4, 3)], {}, [], [])
 hallway = Board(hallwayTiles, (5, 0), (5, 5), BoardEnum.HALLWAY, [(4, 3), (0, 3)], {}, [], [])
 room2 = Board(room2Tiles, (10, 0), (5, 5), BoardEnum.ROOM, [(0, 3)], {}, [], [])
 
-# Example level
-exampleLevel = Level((13, 2), (1, 1), [room1, hallway, room2], False, 0)
+# Example level 1
+exampleLevel1 = Level((13, 2), (1, 1), [room1, hallway, room2], False, 0)

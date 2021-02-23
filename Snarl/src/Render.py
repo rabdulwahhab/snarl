@@ -19,7 +19,9 @@ def getTileColor(tile: Tile):
 
 
 def renderTile(background: pygame.Surface, tile):
-    x, y = getScreenLocation(tile.location)
+    x, y = getScreenLocation(tile.location)  # absolute
+    log = logInFile("Render.py", "renderTile")
+    log("Loc: ", str(tile.location), "PixelLoc: ", str((x, y)))
     tileRect = pygame.Rect(x, y, Globals.TILE_WIDTH, Globals.TILE_HEIGHT)
     tileColor = getTileColor(tile)
     pygame.draw.rect(background, tileColor, tileRect)
@@ -31,7 +33,7 @@ def renderTile(background: pygame.Surface, tile):
 def renderEnemy(background: pygame.Surface, enemy: Enemy):
     x, y = getScreenLocation(enemy.location)
     tileRect = pygame.Rect(x, y, Globals.TILE_WIDTH, Globals.TILE_HEIGHT)
-    tileColor = Colors.ENEMY
+    # tileColor = Colors.ENEMY
     log = logInFile("Render.py", "renderEnemy")
     log(enemy.name)
     enemyLetter = Globals.FONT.render(formatInitial(enemy.name), True,
@@ -50,7 +52,7 @@ def renderEnemies(background: pygame.Surface, enemies):
 def renderPlayer(background: pygame.Surface, player: Player):
     x, y = getScreenLocation(player.location)
     tileRect = pygame.Rect(x, y, Globals.TILE_WIDTH, Globals.TILE_HEIGHT)
-    tileColor = Colors.PLAYER
+    # tileColor = Colors.PLAYER
     # TODO Fonts slow down the loading
     log = logInFile("Render.py", "renderPlayer")
     log(player.name)
@@ -60,7 +62,7 @@ def renderPlayer(background: pygame.Surface, player: Player):
     background.blit(playerLetter, tileRect.topleft)
 
 
-def renderPlayers(background: pygame.Surface, players):
+def renderPlayers(background: pygame.Surface, players: dict):
     log = logInFile("Render.py", "renderPlayers")
     log()
     playerNames = players.keys()
@@ -72,7 +74,7 @@ def renderPlayers(background: pygame.Surface, players):
 def renderItem(background: pygame.Surface, item: Item):
     x, y = getScreenLocation(item.location)
     tileRect = pygame.Rect(x, y, Globals.TILE_WIDTH, Globals.TILE_HEIGHT)
-    tileColor = Colors.GROUND
+    # tileColor = Colors.GROUND
     itemLetter = Globals.FONT.render(formatInitial(item.name), True,
                                      Colors.ITEM)
     # pygame.draw.rect(background, tileColor, tileRect)
@@ -94,9 +96,9 @@ def renderBoard(background: pygame.Surface, board: Board):
         renderTile(background, tile)
 
     log(str(board.players))
-    renderPlayers(background, board.players)
-    renderEnemies(background, board.enemies)
-    renderItems(background, board.items)
+    # renderPlayers(background, board.players)
+    # renderEnemies(background, board.enemies)
+    # renderItems(background, board.items)
 
 
 def renderLevel(background: pygame.Surface, level: Level, boardNumber):
@@ -109,8 +111,9 @@ def renderLevel(background: pygame.Surface, level: Level, boardNumber):
     """
     log = logInFile("Render.py", "renderLevel")
     log()
-    board = level.boards[boardNumber]
-    renderBoard(background, board)
+    # TODO render entire level (including all boards)
+    for board in level.boards:
+        renderBoard(background, board)
 
 
 def renderDungeon(background: pygame.Surface, dungeon: Dungeon):

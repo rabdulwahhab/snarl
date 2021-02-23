@@ -1,5 +1,5 @@
 from Create import validateLevels
-from examples import exampleLevel
+from example1 import exampleLevel
 
 
 def testValidateLevels():
