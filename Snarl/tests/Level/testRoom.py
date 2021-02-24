@@ -1,8 +1,6 @@
 import sys
 import json
 
-sys.path.append("../src")
-
 
 def getLocationsAround(location):
     above = [location[0], location[1] + 1]
@@ -33,10 +31,10 @@ def buildOutput(point, bounds, origin, dimensions, roomLayout):
         relativeLocation = (point[0] - origin[0], point[1] - origin[1])
         surroundingLocations = getLocationsAround(relativeLocation)
         validAround = [location for location in surroundingLocations if
-                       inBoundaries(relativeLocation, dimensions)]
+                       inBoundaries(location, dimensions)]
         traversable = [location for location in validAround if
-                       roomLayout[relativeLocation[0]][
-                           relativeLocation[1]] != 0]
+                       roomLayout[location[0]][
+                           location[1]] != 0]
         traversable = list(map(lambda loc: [loc[0] + origin[0],
                                             loc[1] + origin[1]],
                                traversable))
