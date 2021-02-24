@@ -1,5 +1,4 @@
 from enum import Enum
-import typing
 
 
 class BoardEnum(Enum):
@@ -16,7 +15,8 @@ class TileEnum(Enum):
 
 
 class Dungeon:
-    def __init__(self, levels: list, players: list, currLevel: int, currBoard: int, isGameOver: bool):
+    def __init__(self, levels: list, players: list, currLevel: int,
+                 isGameOver: bool):
         self.levels = levels
         self.players = players
         self.currLevel = currLevel
@@ -24,7 +24,8 @@ class Dungeon:
 
 
 class Level:
-    def __init__(self, keyLocation: tuple, exitLocation: tuple, boards: list, exitUnlocked: bool,
+    def __init__(self, keyLocation: tuple, exitLocation: tuple, boards: list,
+                 exitUnlocked: bool,
                  playerTurn: str):
         self.keyLocation = keyLocation
         self.exitLocation = exitLocation
@@ -35,15 +36,16 @@ class Level:
 
 
 class Board:
-    def __init__(self, tiles: list, origin: tuple, dimensions: tuple, boardType: BoardEnum,
-                 doorLocations: list):
+    def __init__(self, tiles: list, origin: tuple, dimensions: tuple,
+                 boardType: BoardEnum,
+                 doorLocations: list, players={}, enemies={}):
         self.tiles = tiles
         self.origin = origin  # absolute location
         self.dimensions = dimensions  # (width, height)
         self.boardType = boardType
         self.doorLocations = doorLocations
-        self.players = {}
-        self.enemies = {}
+        self.players = players
+        self.enemies = enemies
         self.items = None
 
 
@@ -75,7 +77,7 @@ class Enemy:
 
 
 class Item:
-    def __init__(self, name: str, location:tuple, hasBeenAcquired:bool):
+    def __init__(self, name: str, location: tuple, hasBeenAcquired: bool):
         self.name = name
         self.location = location
         self.hasBeenAcquired = hasBeenAcquired

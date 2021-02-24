@@ -1,5 +1,6 @@
 import Globals
 import Util
+from Util import logInFile
 from Types import *
 from copy import deepcopy
 from random import randint
@@ -33,20 +34,28 @@ def checkHallways(boards: list):
 # TODO Today: Finish create Level and do a render
 
 def addBoardToLevel(level: Level, board: Board):
-    level.boards.append(board)
-    return level
+    newBoards = level.boards + [board]
+    updatedLevel = Level(level.keyLocation, level.exitLocation, newBoards,
+                         level.exitUnlocked, level.playerTurn)
+    return updatedLevel
 
 
 def addPlayersToBoard(board: Board, players: dict):
-    withPlayers = board.players.update(players)
-    board.players = withPlayers
-    return board
+    newPlayers = board.players.copy()
+    newPlayers.update(players)
+    updatedBoard = Board(board.tiles, board.origin, board.dimensions,
+                         board.boardType, board.doorLocations, newPlayers,
+                         board.enemies)
+    return updatedBoard
 
 
-def addEnemiesToBoard(board: Board, enemies: list):
-    withEnemies = board.enemies + enemies
-    board.enemies = withEnemies
-    return board
+def addEnemiesToBoard(board: Board, enemies: dict):
+    newEnemies = board.enemies.copy()
+    newEnemies.update(enemies)
+    updatedBoard = Board(board.tiles, board.origin, board.dimensions,
+                         board.boardType, board.doorLocations, board.players,
+                         newEnemies)
+    return updatedBoard
 
 
 def convertJsonBoard(boardType: str, origin: list, boundaryData: tuple,
@@ -82,7 +91,7 @@ def createGenericBoardTiles(dimensions: tuple, origin: tuple,
             tileType = TileEnum.DOOR if (relX,
                                          relY) in doorLocations else TileEnum.DEFAULT
             tileType = TileEnum.WALL if (i == 0 or i == w - 1) or (
-                        j == 0 or j == h - 1) else tileType
+                    j == 0 or j == h - 1) else tileType
             hasKey = (relX, relY) == keyLocation
             newTile = Tile(tileType, (relX, relY), hasKey)
             boardTiles.append(newTile)
@@ -96,7 +105,7 @@ def createLevel(keyLoc: tuple, exitLoc: tuple, boards: list):
 
 
 # TODO test
-def createDungeon(level: Level, players: dict, enemies: list):
+def createDungeon(level: Level, players: dict, enemies: dict):
     """
     Creates a Dungeon with the given levels, players, and enemies.
     :param level: Level
@@ -105,8 +114,9 @@ def createDungeon(level: Level, players: dict, enemies: list):
     :return: Dungeon
     """
     boardWithPlayers = addPlayersToBoard(level.boards[0], players)
-    boardWithEnemies = addEnemiesToBoard(level.boards[len(level.boards) - 1], enemies)
+    boardWithEnemies = addEnemiesToBoard(level.boards[len(level.boards) - 1],
+                                         enemies)
     level.boards[0] = boardWithPlayers
     level.boards[len(level.boards) - 1] = boardWithEnemies
 
-    return Dungeon([level], players, 0, 0, False)
+    return Dungeon([level], list(players.keys()), 0, False)

@@ -2,4 +2,4 @@
 **/__pycache__/
 **/lib/
 **/include/
-*.DS_Store
+**/.DS_Store

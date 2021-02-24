@@ -1,6 +1,7 @@
 # Example level 2
 
-from Create import createGenericBoardTiles, createLevel
+from Create import createGenericBoardTiles, createLevel, addPlayersToBoard, \
+    addEnemiesToBoard
 from Types import *
 
 keyLoc = (320, 200)
@@ -42,6 +43,9 @@ enemy1 = Enemy("Green man", (221, 51))
 enemy2 = Enemy("The Mischievous Melonhead", (222, 51))
 enemy3 = Enemy("a hyena", (223, 51))
 
-exampleLevel2 = createLevel(keyLoc, exitLoc, [room1, hallway1, room2, hallway2, room3])
+boards = [room1, hallway1, room2, hallway2, room3]
 players = {"Saleha": player1, "Rayyan": player2}
-enemies = [enemy1, enemy2, enemy3]
+enemies = {"Green man": enemy1, "The Mischievous Melonhead": enemy2,
+           "a hyena":   enemy3}
+
+exampleLevel2 = createLevel(keyLoc, exitLoc, boards)

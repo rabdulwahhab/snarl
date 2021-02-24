@@ -25,6 +25,9 @@ def main():
 
     # render test level (400 x 300)
     dung = createDungeon(exampleLevel2, players, enemies)
+    log("DUNGEON BELOW")
+    log(str(dung.players), str(dung.levels[0].boards[0]))
+
     renderDungeon(background, dung)
     # renderLevel(background, exampleLevel2, 0)
 

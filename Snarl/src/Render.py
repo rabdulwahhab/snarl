@@ -21,7 +21,7 @@ def getTileColor(tile: Tile):
 def renderTile(background: pygame.Surface, tile):
     x, y = getScreenLocation(tile.location)  # absolute
     log = logInFile("Render.py", "renderTile")
-    log("Loc: ", str(tile.location), "PixelLoc: ", str((x, y)))
+    # log("Loc: ", str(tile.location), "PixelLoc: ", str((x, y)))
     tileRect = pygame.Rect(x, y, Globals.TILE_WIDTH, Globals.TILE_HEIGHT)
     tileColor = getTileColor(tile)
     pygame.draw.rect(background, tileColor, tileRect)
@@ -37,15 +37,17 @@ def renderEnemy(background: pygame.Surface, enemy: Enemy):
     log = logInFile("Render.py", "renderEnemy")
     log(enemy.name)
     enemyLetter = Globals.FONT.render(formatInitial(enemy.name), True,
-                                      Colors.WHITE)
+                                      Colors.ENEMY)
     # pygame.draw.rect(background, tileColor, tileRect)
     background.blit(enemyLetter, tileRect.topleft)
 
 
-def renderEnemies(background: pygame.Surface, enemies):
+def renderEnemies(background: pygame.Surface, enemies: dict):
     log = logInFile("Render.py", "renderEnemies")
     log()
-    for enemy in enemies:
+    enemyNames = enemies.keys()
+    for name in enemyNames:
+        enemy = enemies[name]
         renderEnemy(background, enemy)
 
 
@@ -95,13 +97,13 @@ def renderBoard(background: pygame.Surface, board: Board):
     for tile in board.tiles:
         renderTile(background, tile)
 
-    log(str(board.players))
-    # renderPlayers(background, board.players)
-    # renderEnemies(background, board.enemies)
+    log("Players in board:", str(board.players))
+    renderPlayers(background, board.players)
+    renderEnemies(background, board.enemies)
     # renderItems(background, board.items)
 
 
-def renderLevel(background: pygame.Surface, level: Level, boardNumber):
+def renderLevel(background: pygame.Surface, level: Level):
     """
     Render the board in the level at the given board number onto the background.
     :param background:
@@ -119,5 +121,4 @@ def renderLevel(background: pygame.Surface, level: Level, boardNumber):
 def renderDungeon(background: pygame.Surface, dungeon: Dungeon):
     log = logInFile("Render.py", "renderDungeon")
     log()
-    renderLevel(background, dungeon.levels[dungeon.currLevel],
-                dungeon.currBoard)
+    renderLevel(background, dungeon.levels[dungeon.currLevel])
