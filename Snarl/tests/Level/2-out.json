@@ -1,2 +1,6 @@
-["Success: Traversable points from ", [3, 3], " in room at ",
-  [0, 0], " are ", [[3, 2], [2, 3]]]
+{
+  "traversable": true,
+  "object": "key",
+  "type": "room",
+  "reachable": [[0, 0]]
+}

@@ -1,4 +1,4 @@
-querying wall tile (non traverseable)]
+querying tile that is way out of bounds]
 [{
   "rooms": [
     { "type" : "room",
@@ -18,4 +18,4 @@ querying wall tile (non traverseable)]
   }],
   "objects": [ { "type": "key", "position": [1, 1] },
                { "type": "exit", "position": [3, 1] } ]
-}, [0, 0]]
+}, [100, 100]]

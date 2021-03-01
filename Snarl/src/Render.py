@@ -92,6 +92,7 @@ def renderItems(background: pygame.Surface, items):
 
 
 def renderBoard(background: pygame.Surface, board: Board):
+    # FIXME only Rooms should render door tiles
     log = logInFile("Render.py", "renderBoard")
     log()
     for tile in board.tiles:
