@@ -26,7 +26,7 @@ class Dungeon:
 class Level:
     def __init__(self, keyLocation: tuple, exitLocation: tuple, boards: list,
                  exitUnlocked: bool,
-                 playerTurn: str):
+                 playerTurn=None):
         self.keyLocation = keyLocation
         self.exitLocation = exitLocation
         self.boards = boards

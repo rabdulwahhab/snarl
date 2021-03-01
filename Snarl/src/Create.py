@@ -1,10 +1,6 @@
 import Globals
-import Util
-from Util import logInFile
 from Types import *
-from copy import deepcopy
-from random import randint
-from more_itertools import interleave, flatten, all_unique
+from more_itertools import flatten, all_unique
 from functools import reduce
 
 
@@ -56,29 +52,6 @@ def addEnemiesToBoard(board: Board, enemies: dict):
                          board.boardType, board.doorLocations, board.players,
                          newEnemies)
     return updatedBoard
-
-
-def convertJsonBoard(boardType: str, origin: list, boundaryData: tuple,
-                     tileLayout: list):
-    boardEnum = BoardEnum.ROOM if boardType == "room" else BoardEnum.HALLWAY
-    upperLeftCorner = (origin[0], origin[1])
-    tiles = []
-    doorLocations = []
-    for i in tileLayout:
-        for j in tileLayout[i]:
-            if tileLayout[i][j] == 0:
-                temp = Tile(TileEnum.WALL, (i, j), False)
-                tiles.append(temp)
-            elif tileLayout[i][j] == 2:
-                temp = Tile(TileEnum.DOOR, (i, j), False)
-                tiles.append(temp)
-                doorLocations.append((i, j))
-            else:
-                temp = Tile(TileEnum.DEFAULT, (i, j), False)
-                tiles.append(temp)
-    board = Board(tiles, upperLeftCorner, boundaryData, boardEnum,
-                  doorLocations)
-    return board
 
 
 def createGenericBoardTiles(dimensions: tuple, origin: tuple,

@@ -1,3 +1,7 @@
+from Types import *
+from Util import log, locationInBounds
+from more_itertools import first_true
+
 """
 Wishlist of Functions:
 - ConvertJSONLevel (similar to convertJSONBoard)
@@ -29,3 +33,20 @@ Once we have ocnverted to a level, out first couple outputs are easy:
 
 
 """
+
+
+def whichBoardInLevel(level: Level, givenPoint: tuple):
+    pointX = int(givenPoint[0])
+    pointY = int(givenPoint[1])
+    point = (pointX, pointY)
+    for i in range(len(level.boards)):
+        currBoard: Board = level.boards[i]
+        if currBoard.boardType == BoardEnum.ROOM:
+            if locationInBounds(point, currBoard.origin, currBoard.dimensions):
+                return i
+        else:
+            hallwayTiles = currBoard.tiles
+            if first_true(hallwayTiles, default=None,
+                          pred=lambda tile: tile.location == point) is not None:
+                return i
+    return -1

@@ -57,6 +57,12 @@ def genDoorCoords(roomWidth, roomHeight):
     return newCoord
 
 
+def intifyTuple(tupleOfTwoStr: tuple):
+    i1 = int(tupleOfTwoStr[0])
+    i2 = int(tupleOfTwoStr[1])
+    return i1, i2
+
+
 def genXRandCoords(numRandCoord, rejectCoords, dimensions):
     newCoordinates = set()
     (maxWidth, maxHeight) = dimensions
@@ -70,11 +76,29 @@ def genXRandCoords(numRandCoord, rejectCoords, dimensions):
     return newCoordinates
 
 
-# TODO test
-def locationInBounds(location: tuple, origin: tuple, dimension: tuple):
+def getLocationsAround(location: tuple):
     x, y = location
+    above = [x, y + 1]
+    below = [x, y - 1]
+    right = [x + 1, y]
+    left = [x - 1, y]
+    return [above, right, below, left]
+
+
+def locationInBounds(location: tuple, origin: tuple, dimension: tuple):
+    log("here in locInBounds")
+    x, y = location
+    log("here in line1 of func")
     ox, oy = origin
-    mx, my = (origin[0] + dimension[0], origin[1] + dimension[1])
+    log("line2")
+    dx, dy = dimension
+    log(str(type(dx)), str(type(dy)))
+    log("line3")
+    log(str(type(ox)), str(type(oy)))
+    mx = ox + dx
+    my = oy + dy
+    # mx, my = (ox + dx, oy + dy)
+    log("line4)")
     return ox <= x < mx and oy <= y < my
 
 
