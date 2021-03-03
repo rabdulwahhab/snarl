@@ -86,19 +86,11 @@ def getLocationsAround(location: tuple):
 
 
 def locationInBounds(location: tuple, origin: tuple, dimension: tuple):
-    log("here in locInBounds")
     x, y = location
-    log("here in line1 of func")
     ox, oy = origin
-    log("line2")
     dx, dy = dimension
-    log(str(type(dx)), str(type(dy)))
-    log("line3")
-    log(str(type(ox)), str(type(oy)))
     mx = ox + dx
     my = oy + dy
-    # mx, my = (ox + dx, oy + dy)
-    log("line4)")
     return ox <= x < mx and oy <= y < my
 
 

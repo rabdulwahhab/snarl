@@ -1,4 +1,3 @@
-room with hallway that connects to itself. query a exit tile in it]
 [{
   "rooms": [
     { "type" : "room",
@@ -6,9 +5,9 @@ room with hallway that connects to itself. query a exit tile in it]
     "bounds" : { "rows" : 5,
                  "columns" : 5 },
     "layout" : [ [0, 0, 2, 0, 0],
+                 [0, 1, 1, 1, 2],
                  [0, 1, 1, 1, 0],
-                 [0, 1, 1, 1, 0],
-                 [0, 1, 1, 1, 0],
+                 [0, 1, 1, 1, 2],
                  [0, 0, 2, 0, 0]]
   }],
   "hallways": [{

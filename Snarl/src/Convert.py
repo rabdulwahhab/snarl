@@ -14,22 +14,23 @@ What a json room looks like:
 def convertJsonRoom(origin: list, boundaryData: list,
                     tileLayout: list):
     boardEnum = BoardEnum.ROOM
-    log(str(boundaryData))
     dimensions = intifyTuple(tuple(boundaryData))
     upperLeftCorner = intifyTuple(tuple(origin))
     tiles = []
     doorLocations = []
     for i in range(len(tileLayout)):
         for j in range(len(tileLayout[i])):
+            relX = i + upperLeftCorner[0]
+            relY = j + upperLeftCorner[1]
             if tileLayout[i][j] == 0:
-                temp = Tile(TileEnum.WALL, (i, j), False)
+                temp = Tile(TileEnum.WALL, (relX, relY), False)
                 tiles.append(temp)
             elif tileLayout[i][j] == 2:
-                temp = Tile(TileEnum.DOOR, (i, j), False)
+                temp = Tile(TileEnum.DOOR, (relX, relY), False)
                 tiles.append(temp)
-                doorLocations.append((i, j))
+                doorLocations.append((relX, relY))
             else:
-                temp = Tile(TileEnum.DEFAULT, (i, j), False)
+                temp = Tile(TileEnum.DEFAULT, (relX, relY), False)
                 tiles.append(temp)
 
     return Board(tiles, upperLeftCorner, dimensions, boardEnum,

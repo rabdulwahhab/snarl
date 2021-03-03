@@ -1,6 +1,5 @@
 import sys
 import json
-sys.path.append('../../src')
 from Util import log, locationInBounds, intifyTuple
 from Types import *
 from more_itertools import first_true
@@ -82,21 +81,25 @@ def reachableRoomOrigins(level: Level, currBoardIndex: int):
             for board in level.boards:
                 if (board.boardType == BoardEnum.HALLWAY) and (
                         connection in board.doorLocations):
-                    connIndex = whichBoardInLevel(level, connection)
-                    if connIndex == currBoardIndex:
-                        if isSelfReachableHallway(level, connIndex):
-                            reachable.append(level.boards)
-                    else:
-                        reachable.append(level.boards[connIndex].origin)
+                    for loc in board.doorLocations:
+                        if loc != connection:
+                            connIndex = whichBoardInLevel(level, loc)
+                            if level.boards[connIndex].origin not in reachable:
+                                reachable.append(level.boards[connIndex].origin)
     return reachable
 
 
-def isSelfReachableHallway(level: Level, boardIndex: int):
+
+
+
+
+
+def isSelfReachableHallway(level: Level, hallwayIndex: int):
     selfIndex = 0
-    board = level.boards[boardIndex]
+    board = level.boards[hallwayIndex]
     for location in board.doorLocations:
         currIndex = whichBoardInLevel(level, location)
-        if currIndex == boardIndex:
+        if currIndex == hallwayIndex:
             selfIndex += 1
     return selfIndex >= 2
 

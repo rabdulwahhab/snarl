@@ -43,6 +43,7 @@ class Board:
         self.origin = origin  # absolute location
         self.dimensions = dimensions  # (width, height)
         self.boardType = boardType
+        # For hallways, indicates roomDoors it connects to
         self.doorLocations = doorLocations
         self.players = players
         self.enemies = enemies
