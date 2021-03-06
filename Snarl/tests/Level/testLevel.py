@@ -1,40 +1,9 @@
 import sys
 import json
-sys.path.append('../../src')
 from Util import log, locationInBounds, intifyTuple
 from Types import *
 from more_itertools import first_true
 from Convert import convertJsonLevel
-
-"""
-Wishlist of Functions:
-- ConvertJSONLevel (similar to convertJSONBoard)
---- Convert rooms (we have this for boards so we can use that)
---- Convert hallway (we wrote out the logic for this on the OneNote sheet)
-- REACHABLE LOGIC!!!!
---- Big TODO
-- What board are we on? (Level, Point) -> origin of board point is in
-
-
-Once we have ocnverted to a level, out first couple outputs are easy:
-- traversable: check tileType
-- object: check point against key and exit locations
-- type: check within boundaries of diff boards, at board index check type
---- For hallways, traverse tiles, for boards check origin + dimens for bounds
-- reachable: BIG INTERESTING
---- Find which board we're in currently
---- If hallway:
------ Check doorLocations
------ Locate what board those locations are on
------ Get the origins of those boards/rooms and output
---- If room:
------ Check doorLocations
-------- Check if each doorLoc is in a hallways doorLoc. 
-----------If yes, check that hallways doorLocs
-----------Check those doorLocs room and get origin
-----------Add origin to reachable
-
-"""
 
 
 def whichBoardInLevel(level: Level, givenPoint: tuple):
@@ -49,25 +18,9 @@ def whichBoardInLevel(level: Level, givenPoint: tuple):
         else:
             hallwayTiles = currBoard.tiles
             if first_true(hallwayTiles, default=None,
-                          pred=lambda tile: tile.location == point) is not None:
+                    pred=lambda tile: tile.location == point) is not None:
                 return i
     return -1
-
-
-"""
-- reachable: BIG INTERESTING
---- Find which board we're in currently
---- If hallway:
------ Check doorLocations
------ Locate what board those locations are on
------ Get the origins of those boards/rooms and output
---- If room:
------ Check doorLocations
-------- Check if each doorLoc is in a hallways doorLoc. 
-----------If yes, check that hallways doorLocs
-----------Check those doorLocs room and get origin
-----------Add origin to reachable
-"""
 
 
 def reachableRoomOrigins(level: Level, currBoardIndex: int):
@@ -82,23 +35,12 @@ def reachableRoomOrigins(level: Level, currBoardIndex: int):
             for board in level.boards:
                 if (board.boardType == BoardEnum.HALLWAY) and (
                         connection in board.doorLocations):
-                    connIndex = whichBoardInLevel(level, connection)
-                    if connIndex == currBoardIndex:
-                        if isSelfReachableHallway(level, connIndex):
-                            reachable.append(level.boards)
-                    else:
-                        reachable.append(level.boards[connIndex].origin)
+                    for loc in board.doorLocations:
+                        if loc != connection:
+                            connIndex = whichBoardInLevel(level, loc)
+                            if level.boards[connIndex].origin not in reachable:
+                                reachable.append(level.boards[connIndex].origin)
     return reachable
-
-
-def isSelfReachableHallway(level: Level, boardIndex: int):
-    selfIndex = 0
-    board = level.boards[boardIndex]
-    for location in board.doorLocations:
-        currIndex = whichBoardInLevel(level, location)
-        if currIndex == boardIndex:
-            selfIndex += 1
-    return selfIndex >= 2
 
 
 def isTraversable(level: Level, currBoardIndex: int, givenPoint: tuple):
@@ -125,17 +67,6 @@ def typeOutput(level: Level, boardIndex: int):
         return "hallway"
     else:
         return "void"
-
-
-"""
-Shape of output:
-{
-  "traversable": (boolean),
-  "object": (maybe-object-type),
-  "type": (room-or-hallway-or-void),
-  "reachable": (point-list)
-}
-"""
 
 
 def main():
@@ -176,3 +107,4 @@ def main():
 
 if __name__ == '__main__':
     main()
+
