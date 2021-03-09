@@ -1,26 +1,9 @@
 import sys
 import json
-from Util import log, locationInBounds, intifyTuple
+from Util import log, locationInBounds, intifyTuple, whichBoardInLevel
 from Types import *
 from more_itertools import first_true
 from Convert import convertJsonLevel
-
-
-def whichBoardInLevel(level: Level, givenPoint: tuple):
-    pointX = int(givenPoint[0])
-    pointY = int(givenPoint[1])
-    point = (pointX, pointY)
-    for i in range(len(level.boards)):
-        currBoard: Board = level.boards[i]
-        if currBoard.boardType == BoardEnum.ROOM:
-            if locationInBounds(point, currBoard.origin, currBoard.dimensions):
-                return i
-        else:
-            hallwayTiles = currBoard.tiles
-            if first_true(hallwayTiles, default=None,
-                    pred=lambda tile: tile.location == point) is not None:
-                return i
-    return -1
 
 
 def reachableRoomOrigins(level: Level, currBoardIndex: int):
@@ -107,4 +90,3 @@ def main():
 
 if __name__ == '__main__':
     main()
-
