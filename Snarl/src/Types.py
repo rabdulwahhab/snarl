@@ -35,6 +35,7 @@ class Level:
         self.currBoard = 0
 
 
+
 class Board:
     def __init__(self, tiles: list, origin: tuple, dimensions: tuple,
                  boardType: BoardEnum,

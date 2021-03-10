@@ -1,5 +1,6 @@
 from Types import *
-from Util import whichBoardInLevel, getLocationsAround, locationInBounds
+from Util import whichBoardInLevel, getLocationsAround, locationInBounds, \
+    locationInLevelBounds
 from more_itertools import unique_everseen
 
 
@@ -18,10 +19,10 @@ def playerCanMoveTo(destination: tuple, player: Player, level: Level,
 
     board = level.boards[destBoardNumber]
     for tile in board.tiles:
-        if tile == destination \
-                and tile.tileType is not TileEnum.WALL \
-                and not destHasPlayer(destination, board):
-            return True
+        if tile.location == destination:
+            if tile.tileType is not TileEnum.WALL \
+                    and not destHasPlayer(destination, board):
+                return True
 
     return False
 
@@ -47,18 +48,19 @@ def playerPossibleCardinalMoves(location: tuple, numMoves: int, level: Level,
     while numMoves > 0:
         if len(possibleMoves) == 0:
             possibleMoves += list(filter(
-                lambda lamLoc: locationInBounds(lamLoc, board.origin,
-                                                board.dimensions),
+                lambda lamLoc: locationInLevelBounds(level, lamLoc),
                 getLocationsAround(location)))
         else:
+            temp = []
             for loc in possibleMoves:
-                possibleMoves += list(filter(
+                temp += list(filter(
                     lambda lamLoc: locationInBounds(lamLoc, board.origin,
                                                     board.dimensions),
                     getLocationsAround(loc)))
-
+            possibleMoves += temp
         numMoves -= 1
-        possibleMoves = unique_everseen(possibleMoves)
+        possibleMoves = list(unique_everseen(possibleMoves))
+
     return possibleMoves
 
 
@@ -76,7 +78,8 @@ def destHasEnemy(destination: tuple, board: Board):
     """
     Checks if moving to the destination will cause an interaction with an enemy
     """
-    for enemy in board.enemies:
+    for enemyName in board.enemies.keys():
+        enemy = board.enemies[enemyName]
         if destination == enemy.location:
             return True
     return False
@@ -89,7 +92,8 @@ def destHasPlayer(destination: tuple, board: Board):
     """
     # TODO:
     #  ESSENTIALLY: check if board's players have a location equal to that of dest
-    for player in board.players:
+    for playerName in board.players.keys():
+        player = board.players[playerName]
         if destination == player.location:
             return True
     return False
@@ -97,10 +101,16 @@ def destHasPlayer(destination: tuple, board: Board):
 
 def destHasKey(destination: tuple, level: Level):
     """
-    Checks if moving to the destination will cause an interaction with a key
+    Checks if moving to the destination will cause an interaction with a key.
     """
-    keyLoc = level.keyLocation
-    return destination == keyLoc
+    return destination == level.keyLocation
+
+
+def destHasExit(destination: tuple, level: Level):
+    """
+    Checks if moving to the destination will cause an interaction with an exit.
+    """
+    return destination == level.exitLocation
 
 
 def destHasItem(destination: tuple, board: Board):

@@ -59,9 +59,9 @@ def genDoorCoords(roomWidth, roomHeight):
     return newCoord
 
 
-def intifyTuple(tupleOfTwoStr: tuple):
-    i1 = int(tupleOfTwoStr[0])
-    i2 = int(tupleOfTwoStr[1])
+def intifyTuple(nonTupleOrTuple: tuple):
+    i1 = int(nonTupleOrTuple[0])
+    i2 = int(nonTupleOrTuple[1])
     return i1, i2
 
 
@@ -80,11 +80,18 @@ def genXRandCoords(numRandCoord, rejectCoords, dimensions):
 
 def getLocationsAround(location: tuple):
     x, y = location
-    above = [x, y + 1]
-    below = [x, y - 1]
-    right = [x + 1, y]
-    left = [x - 1, y]
+    above = (x, y + 1)
+    below = (x, y - 1)
+    right = (x + 1, y)
+    left = (x - 1, y)
     return [above, right, below, left]
+
+
+def locationInLevelBounds(level: Level, location: tuple):
+    for board in level.boards:
+        if locationInBounds(location, board.origin, board.dimensions):
+            return True
+    return False
 
 
 def locationInBounds(location: tuple, origin: tuple, dimension: tuple):
