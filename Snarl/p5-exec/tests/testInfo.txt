@@ -1,0 +1,10 @@
+1. valid move
+2. move onto exit (locked)
+3. move onto exit (unlocked)
+4. move onto enemy (player dies)
+5. move player not in game
+6. move into wall
+7. move into the void
+8. move a leap
+9. move to player spot
+10. move onto the key

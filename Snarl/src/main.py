@@ -39,6 +39,14 @@ def main():
             if event.type == QUIT:
                 sys.exit(0)
 
+        """
+        gameCollection ---> {gameName: dungeon}
+        observerCollection ---> {observerName: gameName}
+        
+        when observe requested/game state change
+            Observer.send(observerName, gameCollection[observerCollection[observerName]])
+        """
+
         # map of keys pressed
         # keys = pygame.key.get_pressed()
 

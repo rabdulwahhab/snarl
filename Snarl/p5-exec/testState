@@ -1,0 +1,6 @@
+#!/bin/bash
+
+# run test harness
+
+export PYTHONPATH=$PYTHONPATH:.
+python3.6 testState.py
