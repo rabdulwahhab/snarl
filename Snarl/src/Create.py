@@ -45,6 +45,16 @@ def addPlayersToBoard(board: Board, players: dict):
     return updatedBoard
 
 
+def removePlayersFromBoard(board: Board, players: dict):
+    newPlayers = board.players.copy()
+    for playerName in players.values():
+        del newPlayers[playerName]
+    updatedBoard = Board(board.tiles, board.origin, board.dimensions,
+                         board.boardType, board.doorLocations, newPlayers,
+                         board.enemies)
+    return updatedBoard
+
+
 def addEnemiesToBoard(board: Board, enemies: dict):
     newEnemies = board.enemies.copy()
     newEnemies.update(enemies)

@@ -7,7 +7,8 @@ from more_itertools import unique_everseen
 def playerCanMoveTo(destination: tuple, player: Player, level: Level,
                     numMoves: int):
     """
-    Check if the destination given can be moved to by a given player
+    Check if the destination given can be moved to by a given player.
+    (True if destination does not have a player and is traversable)
     """
     # NOTE this gets all locations in the board
     destBoardNumber = whichBoardInLevel(level, destination)

@@ -1,5 +1,5 @@
 from Types import *
-from Create import createDungeon, addPlayersToBoard
+from Create import createDungeon, addPlayersToBoard, removePlayersFromBoard
 from Move import moveEntity
 from Rulechecker import playerPossibleCardinalMoves, \
     destHasEnemy, destHasItem, destHasKey, destHasExit, playerCanMoveTo
@@ -23,14 +23,12 @@ def move(playerName: str, destination: tuple, game: Dungeon):
     player = currBoard.players[playerName]
     numMoves = 2
     if playerCanMoveTo(destination, player, currLevel, numMoves):
-        log("player can move to!")
         updatedLevel = moveEntity(currLevel, playerName, currBoardNum,
                                   destination, isPlayer=True)
         game.levels[game.currLevel] = updatedLevel
         updatedGame = interact(playerName, destination, game)
         return updatedGame
     else:
-        log("player CANNOT move to")
         return game
 
 
@@ -84,6 +82,23 @@ def interactWithKey(playerName: str, location: tuple, game: Dungeon):
     return game
 
 
+def removePlayer(playerName: str, game: Dungeon):
+    """
+    Removes the player from the level and returns the
+    updated game.
+    :param playerName: str
+    :param game: Dungeon
+    """
+    currLevel: Level = game.levels[game.currLevel]
+    currBoard: Board = currLevel.boards[currLevel.currBoard]
+    player = currBoard.players[playerName]
+    updatedBoard = removePlayersFromBoard(currBoard, {playerName: player})
+    currLevel.boards[currLevel.currBoard] = updatedBoard
+    return game
+
+
+# TODO: look thru to make sure it still works as expected after advancePlayer adjustment
+# FIXME: need to refactor for placing all players in the next level at sane locations
 def advanceLevel(game: Dungeon):
     """
     Advances the game (Dungeon) to the next level (increments game's current
@@ -99,10 +114,12 @@ def advanceLevel(game: Dungeon):
     game.currLevel = nextLevelNum
     currLevel: Level = game.levels[game.currLevel]
     currBoard: Board = currLevel.boards[currLevel.currBoard]
+
     allPlayers = currBoard.players.copy()
     currBoard.players = {}
     nextLevel: Level = game.levels[nextLevelNum]
     nextBoard: Board = nextLevel.boards[nextLevel.currBoard]
+    # TODO use addPlayerToBoard
     nextBoard.players = allPlayers
     # FIXME place players in different locations
     newLocations = []
@@ -112,7 +129,7 @@ def advanceLevel(game: Dungeon):
                                                     nextLevelNum)
 
     for playerName in allPlayers.keys():
-        player: Player = game.players[playerName]
+        player: Player = nextBoard.players[playerName]
         player.location = newLocations.pop()
 
     return game
@@ -122,7 +139,12 @@ def interactWithExit(playerName: str, location: tuple, game: Dungeon):
     for level in game.levels:
         if location == level.exitLocation:
             if level.exitUnlocked:
-                return advanceLevel(game)
+                currBoard: Board = level.boards[level.currBoard]
+                if len(currBoard.players.values()) == 1:  # last player
+                    # FIXME return advanceLevel(game)
+                    return removePlayer(playerName, game)
+                else:
+                    return removePlayer(playerName, game)
     return game
 
 

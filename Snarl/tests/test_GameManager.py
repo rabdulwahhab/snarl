@@ -1,7 +1,7 @@
 from Types import *
 from GameManager import move
 from example2 import exampleDungeon2, exampleLevel2, player1
-from Util import logInFile
+from Util import logInFile, locationInBounds
 
 log = logInFile("test_GameManager.py")
 
@@ -18,6 +18,7 @@ Cases:
 - move into the void
 """
 
+# TODO MAKE THINGS LOOK GOOD
 
 def testOneNormalMove():
     orig = player1.location
@@ -70,43 +71,109 @@ def testMoveIntoKey():
     assert level.exitUnlocked
 
 
-def testMoveIntoExitAdvanceLevel():
-    assert False
-
-
-def testMoveIntoExitLastLevel():
-    assert False
-
-
-def testMoveIntoPlayer():
-    # FIXME adapt/update asserts to pass
+def testMoveIntoExitNotUnlocked():
     orig = player1.location
-    log("orig", str(orig))
-    dest = (12, 1)
+    exampleDungeon2.levels[0].exitLocation = (11, 2)
+    dest = (11, 2)
     res: Dungeon = move("Saleha", dest, exampleDungeon2)
     level: Level = res.levels[res.currLevel]
     board: Board = level.boards[level.currBoard]
     updatedPlayer: Player = board.players["Saleha"]
-    log("updated loc", str(updatedPlayer.location))
     assert updatedPlayer.location is not orig
     assert updatedPlayer.location == dest
+    assert not level.exitUnlocked
+    assert res.currLevel == exampleDungeon2.currLevel
+
+
+def testMoveIntoExitAdvanceLevel():
+    # Given
+    orig = player1.location
+    exampleDungeon2.levels[0].exitLocation = (11, 2)
+    exampleDungeon2.levels[0].exitUnlocked = True
+    exampleDungeon2.levels.append(exampleLevel2)
+    dest = (11, 2)
+
+    # When
+    res: Dungeon = move("Saleha", dest, exampleDungeon2)
+    level: Level = res.levels[res.currLevel]
+    board: Board = level.boards[level.currBoard]
+    updatedPlayer: Player = board.players["Saleha"]
+
+    # Then
+    assert updatedPlayer.location is not orig
+    assert updatedPlayer.location is not dest
+    assert res.currLevel == 1
+    inBoundsOfNextLevelRoom = locationInBounds(updatedPlayer.location,
+                                               board.origin, board.dimensions)
+
+    # player is within the bounds of the first room in
+    # the next level
+    assert inBoundsOfNextLevelRoom
+
+    # first level exit has been unlocked
+    assert res.levels[0].exitUnlocked
+
+    # all players have been moved to board in next level
+    assert len(board.players.values()) == 2
+
+
+def testMoveIntoExitLastLevel():
+    # Given
+    orig = player1.location
+    exampleDungeon2.levels[0].exitLocation = (11, 2)
+    exampleDungeon2.levels[0].exitUnlocked = True
+    dest = (11, 2)
+
+    # When
+    res: Dungeon = move("Saleha", dest, exampleDungeon2)
+    level: Level = res.levels[res.currLevel]
+    board: Board = level.boards[level.currBoard]
+    updatedPlayer: Player = board.players["Saleha"]
+
+    # Then
+    assert updatedPlayer.location is not orig
+    assert updatedPlayer.location is dest
+
+    # The game is over (game won)
+    assert res.isGameOver
+
+
+def testMoveIntoPlayer():
+    # Given
+    orig = player1.location
+    dest = (12, 1)
+
+    # When
+    res: Dungeon = move("Saleha", dest, exampleDungeon2)
+    level: Level = res.levels[res.currLevel]
+    board: Board = level.boards[level.currBoard]
+    updatedPlayer: Player = board.players["Saleha"]
+
+    # Then no change
+    assert updatedPlayer.location is orig
+    assert updatedPlayer.location is not dest
+    assert res == exampleDungeon2
 
 
 def testMoveIntoEnemy():
+    # Given
     orig = player1.location
     log("orig", str(orig))
     board: Board = exampleLevel2.boards[exampleLevel2.currBoard]
     enemy1 = Enemy("Green man", (11, 2))
     board.enemies = {"Green man": enemy1}
     dest = (11, 2)
+
+    # When
     res: Dungeon = move("Saleha", dest, exampleDungeon2)
     level: Level = res.levels[res.currLevel]
     board: Board = level.boards[level.currBoard]
+
+    # Then
     assert player1 not in board.players.values()
     assert player1.name in res.players
     assert enemy1 in board.enemies.values()
     assert enemy1.location == dest
-
 
 
 def testMoveIntoVoid():

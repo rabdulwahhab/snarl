@@ -1,5 +1,6 @@
 from Types import *
-from Util import log, intifyTuple
+from Util import log, intifyTuple, whichBoardInLevel
+from Create import addPlayersToBoard, addEnemiesToBoard
 
 """
 What a json room looks like: 
@@ -11,8 +12,17 @@ What a json room looks like:
 """
 
 
-def convertJsonRoom(origin: list, boundaryData: list,
-                    tileLayout: list):
+def convertJsonPlayer(jsonPlayer: dict):
+    newPlayer = Player(jsonPlayer["name"], intifyTuple(jsonPlayer["position"]))
+    return newPlayer
+
+
+def convertJsonEnemy(jsonEnemy: dict):
+    newEnemy = Enemy(jsonEnemy["name"], intifyTuple(jsonEnemy["position"]))
+    return newEnemy
+
+
+def convertJsonRoom(origin: list, boundaryData: list, tileLayout: list):
     boardEnum = BoardEnum.ROOM
     dimensions = intifyTuple(tuple(boundaryData))
     upperLeftCorner = intifyTuple(tuple(origin))
@@ -112,3 +122,28 @@ def convertJsonLevel(rooms: list, hallways: list, objects: list):
     keyLoc = intifyTuple(tuple(keyObj["position"]))
     exitLoc = intifyTuple(tuple(exitObj["position"]))
     return Level(keyLoc, exitLoc, roomBoards + hallwayBoards, False)
+
+
+def convertJsonDungeon(jsonLevel: Level, jsonPlayers: list, jsonEnemies: list, jsonExitLocked: bool):
+    level: Level = convertJsonLevel(jsonLevel["rooms"], jsonLevel["hallways"], jsonLevel["objects"])
+    level.exitUnlocked = not jsonExitLocked
+
+    playerNames = []
+    for player in jsonPlayers:
+        # make player
+        newPlayer = convertJsonPlayer(player)
+        playerNames.append(newPlayer.name)
+        playerDict = {newPlayer.name : newPlayer}
+        playerBoard = whichBoardInLevel(level, newPlayer.location)
+        level.boards[playerBoard] = addPlayersToBoard(level.boards[playerBoard], playerDict)
+    # Same for enemies
+    enemyNames = []
+    for enemy in jsonEnemies:
+        newEnemy = convertJsonEnemy(enemy)
+        enemyNames.append(newEnemy.name)
+        enemyDict = {newEnemy.name : newEnemy}
+        enemyBoard = whichBoardInLevel(level, newEnemy.location)
+        level.boards[enemyBoard] = addEnemiesToBoard(level.boards[enemyBoard], enemyDict)
+
+    game = Dungeon([level], playerNames, 0, False)
+    return game
