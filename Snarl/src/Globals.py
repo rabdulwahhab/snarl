@@ -15,5 +15,5 @@ TILE_HEIGHT = 4
 GAME_WIDTH = floor(SCREEN_WIDTH / TILE_WIDTH)
 GAME_HEIGHT = floor(SCREEN_HEIGHT / TILE_HEIGHT)
 
-pygame.font.init()
-FONT = pygame.font.SysFont('arial', 24)
+# pygame.font.init()
+# FONT = pygame.font.SysFont('arial', 24)

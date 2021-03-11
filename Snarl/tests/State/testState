@@ -3,4 +3,4 @@
 # run test harness
 
 export PYTHONPATH=$PYTHONPATH:.
-python testState.py
+python3.6 ../../src/testState.py

@@ -1,4 +1,3 @@
-# move player not in game
 [{
   "type": "state",
   "level": {
@@ -61,4 +60,4 @@
   },
   "Green man",
   [4, 4]
-]]
+]

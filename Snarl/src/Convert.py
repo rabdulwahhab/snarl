@@ -1,3 +1,4 @@
+import json
 from Types import *
 from Util import log, intifyTuple, whichBoardInLevel
 from Create import addPlayersToBoard, addEnemiesToBoard
@@ -124,12 +125,13 @@ def convertJsonLevel(rooms: list, hallways: list, objects: list):
     return Level(keyLoc, exitLoc, roomBoards + hallwayBoards, False)
 
 
-def convertJsonDungeon(jsonLevel: Level, jsonPlayers: list, jsonEnemies: list, jsonExitLocked: bool):
+def convertJsonDungeon(jsonLevel: dict, jsonPlayers: list, jsonEnemies: list, jsonExitLocked: bool):
     level: Level = convertJsonLevel(jsonLevel["rooms"], jsonLevel["hallways"], jsonLevel["objects"])
     level.exitUnlocked = not jsonExitLocked
 
     playerNames = []
     for player in jsonPlayers:
+        log("player is ", str(player))
         # make player
         newPlayer = convertJsonPlayer(player)
         playerNames.append(newPlayer.name)
@@ -147,3 +149,5 @@ def convertJsonDungeon(jsonLevel: Level, jsonPlayers: list, jsonEnemies: list, j
 
     game = Dungeon([level], playerNames, 0, False)
     return game
+
+
