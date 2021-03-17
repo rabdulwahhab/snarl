@@ -1,8 +1,7 @@
 import sys
 import json
-from Util import log, locationInBounds, intifyTuple, whichBoardInLevel
+from Util import intifyTuple, whichBoardInLevel
 from Types import *
-from more_itertools import first_true
 from Convert import convertJsonLevel
 
 
@@ -29,9 +28,11 @@ def reachableRoomOrigins(level: Level, currBoardIndex: int):
 def isTraversable(level: Level, currBoardIndex: int, givenPoint: tuple):
     currBoard = level.boards[currBoardIndex]
     # Check traversable
-    for tile in currBoard.tiles:
-        if tile.location == givenPoint:
-            return tile.tileType != TileEnum.WALL
+    for row in currBoard.tiles.keys():
+        for col in currBoard.tiles[row].keys():
+            tile = currBoard.tiles[row][col]
+            if (row, col) == givenPoint:
+                return tile.tileType != TileEnum.WALL
     return True
 
 

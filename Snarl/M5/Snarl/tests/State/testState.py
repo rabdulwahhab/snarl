@@ -1,6 +1,6 @@
 import sys
 import json
-from Util import intifyTuple, whichBoardInLevel, isTileOnBoard
+from Util import intifyTuple, whichBoardInLevel
 from Convert import convertJsonDungeon
 from Types import *
 from Rulechecker import destHasPlayer, destHasKey, destHasEnemy
@@ -40,9 +40,9 @@ def validMoveForHarness(destination: tuple, level: Level):
         return False
     if destHasPlayer(destination, level.boards[boardNum]):
         return False
-    if isTileOnBoard(destination, level.boards[boardNum]):
-        tile = level.boards[boardNum].tiles[destination[0]][destination[1]]
-        return tile.tileType is not TileEnum.WALL
+    for tile in level.boards[boardNum].tiles:
+        if tile.location == destination:
+            return tile.tileType is not TileEnum.WALL
     return False
 
 

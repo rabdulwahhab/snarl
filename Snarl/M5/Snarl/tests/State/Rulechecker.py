@@ -1,6 +1,6 @@
 from Types import *
 from Util import whichBoardInLevel, getLocationsAround, locationInBounds, \
-    locationInLevelBounds, isTileOnBoard
+    locationInLevelBounds
 from more_itertools import unique_everseen
 
 
@@ -23,12 +23,12 @@ def playerCanMoveTo(destination: tuple, player: Player, level: Level,
         return False
 
     board = level.boards[destBoardNumber]
+    for tile in board.tiles:
+        if tile.location == destination:
+            if tile.tileType is not TileEnum.WALL \
+                    and not destHasPlayer(destination, board):
+                return True
 
-    if isTileOnBoard(destination, board):
-        if board.tiles[destination[0]][
-            destination[1]].tileType is not TileEnum.WALL \
-                and not destHasPlayer(destination, board):
-            return True
     return False
 
 
@@ -51,10 +51,11 @@ def enemyCanMoveTo(destination: tuple, enemy: Enemy, level: Level):
         return False
 
     board = level.boards[destBoardNumber]
-    if isTileOnBoard(destination, board):
-        if board.tiles[destination[0]][
-            destination[1]].tileType is not TileEnum.WALL:
-            return True
+    for tile in board.tiles:
+        if tile.location == destination:
+            if tile.tileType is not TileEnum.WALL:  # TODO ghost/zombie
+                return True
+
     return False
 
 

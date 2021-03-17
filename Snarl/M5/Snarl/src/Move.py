@@ -6,15 +6,6 @@ from Util import locationInBounds
 
 def moveEntity(level: Level, name: str, currBoard: int,
                destination: tuple, isPlayer: bool):
-    """
-    Move the Player/Enemy with the given name to the given destination
-    in the level.
-    :param level: Level
-    :param name: str
-    :param currBoard: int
-    :param destination: tuple
-    :param isPlayer: bool
-    """
     board = level.boards[currBoard]
     entity = board.players[name] if isPlayer else board.enemies[name]
     destInBoard = locationInBounds(destination, board.origin,

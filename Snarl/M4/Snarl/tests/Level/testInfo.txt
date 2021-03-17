@@ -1,0 +1,9 @@
+1. Wall tile in first room
+2. Default tile in first room
+3. Tile in middle of hallway
+4. Tile with exit in first room
+5. Tile at origin
+6. Tile not in level
+7. Tile at edge of hallway
+8. Tile with exit in second room
+9. Tile not in level 2
