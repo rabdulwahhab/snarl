@@ -1,8 +1,7 @@
 import sys
 import json
-from Util import log, locationInBounds, intifyTuple, whichBoardInLevel, getListOfTiles
+from Util import intifyTuple, whichBoardInLevel
 from Types import *
-from more_itertools import first_true
 from Convert import convertJsonLevel
 
 
@@ -65,7 +64,6 @@ def main():
         hallways = jsonLevel["hallways"]
         objects = jsonLevel["objects"]
         level = convertJsonLevel(rooms, hallways, objects)
-        log("Level", str(len(level.boards)))
         currentRoom = whichBoardInLevel(level, givenPoint)
         if currentRoom != -1:
             outputTraversable = isTraversable(level, currentRoom, givenPoint)

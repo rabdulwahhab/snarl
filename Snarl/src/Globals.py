@@ -1,13 +1,12 @@
-import pygame
 from math import floor
 
-SCREEN_WIDTH = 1600  # in pixels
-SCREEN_HEIGHT = 1000
+SCREEN_WIDTH = 1400  # in pixels
+SCREEN_HEIGHT = 800
 SCREEN_DIMENSIONS = (SCREEN_WIDTH, SCREEN_HEIGHT)
 BG_COLOR = (255, 255, 255)  # white...boring
 
-TILE_WIDTH = 4
-TILE_HEIGHT = 4
+TILE_WIDTH = 40
+TILE_HEIGHT = 40
 
 # These are the dimensions of the game display (not necessarily the entire
 # screen) in tile units

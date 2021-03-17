@@ -5,27 +5,29 @@ from Util import getScreenLocation, logInFile, formatInitial
 from Types import *
 
 
-def getTileColor(tile: Tile):
-    if tile.tileType == TileEnum.WALL:
+def getTileColor(tileType: TileEnum):
+    if tileType == TileEnum.WALL:
         return Colors.WALL
-    elif tile.tileType == TileEnum.DOOR:
+    elif tileType == TileEnum.DOOR:
         return Colors.DOOR
-    elif tile.tileType == TileEnum.GRASS:
+    elif tileType == TileEnum.GRASS:
         return Colors.GRASS
-    elif tile.tileType == TileEnum.STAIR:
+    elif tileType == TileEnum.STAIR:
         return Colors.STAIR
     else:
         return Colors.GROUND
 
 
-def renderTile(background: pygame.Surface, tile):
-    x, y = getScreenLocation(tile.location)  # absolute
+def renderTile(background: pygame.Surface, tileType: TileEnum, row: int,
+               col: int, hasKey=False, hasExit=False):
     log = logInFile("Render.py", "renderTile")
-    # log("Loc: ", str(tile.location), "PixelLoc: ", str((x, y)))
-    tileRect = pygame.Rect(x, y, Globals.TILE_WIDTH, Globals.TILE_HEIGHT)
-    tileColor = getTileColor(tile)
+    log(str(row), str(col))
+    screenX, screenY = getScreenLocation((row, col))  # absolute location
+    tileRect = pygame.Rect(screenX, screenY, Globals.TILE_WIDTH,
+                           Globals.TILE_HEIGHT)
+    tileColor = Colors.WHITE if hasExit else getTileColor(tileType)
     pygame.draw.rect(background, tileColor, tileRect)
-    if tile.hasKey:
+    if hasKey:
         radius = Globals.TILE_WIDTH / 2
         pygame.draw.circle(background, Colors.KEY, tileRect.center, radius)
 
@@ -91,12 +93,17 @@ def renderItems(background: pygame.Surface, items):
             renderItem(background, item)
 
 
-def renderBoard(background: pygame.Surface, board: Board):
+def renderBoard(background: pygame.Surface, board: Board, keyLoc: tuple,
+                exitLoc: tuple):
     # FIXME only Rooms should render door tiles
     log = logInFile("Render.py", "renderBoard")
     log()
-    for tile in board.tiles:
-        renderTile(background, tile)
+    for row in board.tiles.keys():
+        for col in board.tiles[row].keys():
+            tile = board.tiles[row][col]
+            hasKey = (row, col) == keyLoc
+            hasExit = (row, col) == exitLoc
+            renderTile(background, tile.tileType, row, col, hasKey, hasExit)
 
     log("Players in board:", str(board.players))
     renderPlayers(background, board.players)
@@ -116,7 +123,7 @@ def renderLevel(background: pygame.Surface, level: Level):
     log()
     # TODO render entire level (including all boards)
     for board in level.boards:
-        renderBoard(background, board)
+        renderBoard(background, board, level.keyLocation, level.exitLocation)
 
 
 def renderDungeon(background: pygame.Surface, dungeon: Dungeon):
