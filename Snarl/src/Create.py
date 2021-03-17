@@ -4,7 +4,6 @@ from more_itertools import flatten, all_unique
 from functools import reduce
 
 
-
 def validateLevels(level: Level):
     allBoardTiles = reduce(
         lambda acc, board: list(flatten([acc, getListOfTiles(board.tiles)])),
@@ -69,16 +68,20 @@ def addEnemiesToBoard(board: Board, enemies: dict):
 def createGenericBoardTiles(dimensions: tuple, origin: tuple,
                             doorLocations: list):
     rows, cols = dimensions
-    boardTiles = []
+    boardTiles = dict()
     for r in range(rows):
         for c in range(cols):
-            relX, relY = (origin[0] + r, origin[1] + c)
-            tileType = TileEnum.DOOR if (relX,
-                                         relY) in doorLocations else TileEnum.DEFAULT
+            relRow, relCol = (origin[0] + r, origin[1] + c)
+            tileType = TileEnum.DOOR if (relRow,
+                                         relCol) in doorLocations else TileEnum.DEFAULT
             tileType = TileEnum.WALL if (r == 0 or r == rows - 1) or (
                     c == 0 or c == cols - 1) else tileType
-            newTile = Tile(tileType, (relX, relY))
-            boardTiles.append(newTile)
+            newTile = Tile(tileType)
+            if relRow in boardTiles.keys():
+                boardTiles[relRow].update({relCol: newTile})
+            else:
+                boardTiles[relRow] = {relCol: newTile}
+
     return boardTiles
 
 

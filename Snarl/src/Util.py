@@ -128,3 +128,10 @@ def whichBoardInLevel(level: Level, givenPoint: tuple):
             if column in board.tiles[row].keys():
                 return i
     return -1
+
+
+def isTileOnBoard(location: tuple, board: Board):
+    if location[0] in board.tiles.keys():
+        if location[1] in board.tiles[location[0]].keys():
+            return True
+    return False
