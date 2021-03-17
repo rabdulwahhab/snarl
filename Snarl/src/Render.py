@@ -127,6 +127,12 @@ def renderLevel(background: pygame.Surface, level: Level):
 
 
 def renderDungeon(background: pygame.Surface, dungeon: Dungeon):
+    """
+    Render the Dungeon.
+    :param background: pygame.Surface
+    :param dungeon: Dungeon
+    :return:
+    """
     log = logInFile("Render.py", "renderDungeon")
     log()
     renderLevel(background, dungeon.levels[dungeon.currLevel])

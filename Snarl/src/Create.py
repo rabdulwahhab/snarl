@@ -1,19 +1,13 @@
 import Globals
 from Types import *
-from Util import getListOfTiles
-from more_itertools import flatten, all_unique
-from functools import reduce
-
-
-def validateLevels(level: Level):
-    allBoardTiles = reduce(
-        lambda acc, board: list(flatten([acc, getListOfTiles(board.tiles)])),
-        level.boards, [])
-    return all_unique(allBoardTiles) and checkHallways(
-        level.boards) and allInRange(allBoardTiles)
 
 
 def allInRange(tiles: dict):
+    """
+    Determines if all tiles are in range of the Gloval game height and width
+    param: tiles
+    returns: boolean
+    """
     for row in tiles.keys():
         for col in row.keys():
             if row >= Globals.GAME_HEIGHT or col >= Globals.GAME_WIDTH:
@@ -22,8 +16,12 @@ def allInRange(tiles: dict):
 
 
 def checkHallways(boards: list):
-    # if hallway, check if door locations are at board dimensions
-    #   and check if door locations are in
+    """
+    if hallway, check if door locations are at board dimensions and check if
+    there are at least two door locations
+    param: a list of boards
+    returns: boolean
+    """
     for board in boards:
         if board.boardType == BoardEnum.HALLWAY:
             if len(board.doorLocations) < 2:
@@ -32,6 +30,12 @@ def checkHallways(boards: list):
 
 
 def addBoardToLevel(level: Level, board: Board):
+    """
+    Adds the given board to the given level
+    param: level
+    param: board
+    returns: updatedLevel
+    """
     newBoards = level.boards + [board]
     updatedLevel = Level(level.keyLocation, level.exitLocation, newBoards,
                          level.exitUnlocked, level.playerTurn)
@@ -39,6 +43,12 @@ def addBoardToLevel(level: Level, board: Board):
 
 
 def addPlayersToBoard(board: Board, players: dict):
+    """
+    Adds the given player dictionaries to the board.
+    param: board
+    param: players
+    returns: new board
+    """
     newPlayers = board.players.copy()
     newPlayers.update(players)
     updatedBoard = Board(board.tiles, board.origin, board.dimensions,
@@ -48,6 +58,12 @@ def addPlayersToBoard(board: Board, players: dict):
 
 
 def removePlayersFromBoard(board: Board, players: dict):
+    """
+    Removes the given players from a board
+    param: board
+    param: players
+    returns: new board
+    """
     newPlayers = board.players.copy()
     for playerName in players.keys():
         del newPlayers[playerName]
@@ -58,6 +74,12 @@ def removePlayersFromBoard(board: Board, players: dict):
 
 
 def addEnemiesToBoard(board: Board, enemies: dict):
+    """
+    Adds the given enemy dictionaries to the board.
+    param: board
+    param: enemies
+    returns: new board
+    """
     newEnemies = board.enemies.copy()
     newEnemies.update(enemies)
     updatedBoard = Board(board.tiles, board.origin, board.dimensions,
@@ -68,6 +90,12 @@ def addEnemiesToBoard(board: Board, enemies: dict):
 
 def createGenericBoardTiles(dimensions: tuple, origin: tuple,
                             doorLocations: list):
+    """
+    Creates a generic board with walls on all sides and a given door location.
+    :param dimensions: tuple
+    :param origin: tuple
+    :param doorLocations: list
+    """
     rows, cols = dimensions
     boardTiles = dict()
     for r in range(rows):
@@ -87,6 +115,13 @@ def createGenericBoardTiles(dimensions: tuple, origin: tuple,
 
 
 def createLevel(keyLoc: tuple, exitLoc: tuple, boards: list):
+    """
+    Creates a level from the given key location, exit location, and
+    list of boards.
+    :param keyLoc: tuple
+    :param exitLoc: tuple
+    :param boards: list
+    """
     # TODO rand generation at some point?
     level = Level(keyLoc, exitLoc, boards, False, 0)
     return level
