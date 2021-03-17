@@ -4,21 +4,17 @@ from more_itertools import flatten, all_unique
 from functools import reduce
 
 
-
 def validateLevels(level: Level):
-    allBoardTiles = reduce(
-        lambda acc, board: list(flatten([acc, getListOfTiles(board.tiles)])),
-        level.boards, [])
+    allBoardTiles = reduce(lambda acc, board: list(flatten([acc, board.tiles])),
+                           level.boards, [])
     return all_unique(allBoardTiles) and checkHallways(
         level.boards) and allInRange(allBoardTiles)
 
 
-def allInRange(tiles: dict):
-    for row in tiles.keys():
-        for col in row.keys():
-            if row >= Globals.GAME_HEIGHT or col >= Globals.GAME_WIDTH:
-                return False
-    return True
+def allInRange(tiles: list):
+    for tile in tiles:
+        if tile.location.first >= Globals.GAME_WIDTH or tile.location.second >= Globals.GAME_HEIGHT:
+            return False
 
 
 def checkHallways(boards: list):
@@ -30,6 +26,8 @@ def checkHallways(boards: list):
                 return False
     return True
 
+
+# TODO Today: Finish create Level and do a render
 
 def addBoardToLevel(level: Level, board: Board):
     newBoards = level.boards + [board]
@@ -67,17 +65,18 @@ def addEnemiesToBoard(board: Board, enemies: dict):
 
 
 def createGenericBoardTiles(dimensions: tuple, origin: tuple,
-                            doorLocations: list):
-    rows, cols = dimensions
+                            doorLocations: list, keyLocation=None):
+    w, h = dimensions
     boardTiles = []
-    for r in range(rows):
-        for c in range(cols):
-            relX, relY = (origin[0] + r, origin[1] + c)
+    for i in range(w):
+        for j in range(h):
+            relX, relY = (origin[0] + i, origin[1] + j)
             tileType = TileEnum.DOOR if (relX,
                                          relY) in doorLocations else TileEnum.DEFAULT
-            tileType = TileEnum.WALL if (r == 0 or r == rows - 1) or (
-                    c == 0 or c == cols - 1) else tileType
-            newTile = Tile(tileType, (relX, relY))
+            tileType = TileEnum.WALL if (i == 0 or i == w - 1) or (
+                    j == 0 or j == h - 1) else tileType
+            hasKey = (relX, relY) == keyLocation
+            newTile = Tile(tileType, (relX, relY), hasKey)
             boardTiles.append(newTile)
     return boardTiles
 

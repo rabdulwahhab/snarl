@@ -18,7 +18,7 @@ def whichBoardInLevel(level: Level, givenPoint: tuple):
         else:
             hallwayTiles = currBoard.tiles
             if first_true(hallwayTiles, default=None,
-                    pred=lambda tile: tile.location == point) is not None:
+                          pred=lambda tile: tile.location == point) is not None:
                 return i
     return -1
 
@@ -107,4 +107,3 @@ def main():
 
 if __name__ == '__main__':
     main()
-

@@ -111,20 +111,18 @@ def formatInitial(name):
     return " {} ".format(name[0])
 
 
-def getListOfTiles(tiles: dict):
-    acc = []
-    for row in tiles.keys():
-        for col in row.keys():
-            acc += tiles[row][col]
-
-    return acc
-
-
 def whichBoardInLevel(level: Level, givenPoint: tuple):
-    row, column = intifyTuple(givenPoint)
+    pointX = int(givenPoint[0])
+    pointY = int(givenPoint[1])
+    point = (pointX, pointY)
     for i in range(len(level.boards)):
-        board = level.boards[i]
-        if row in board.tiles.keys():
-            if column in board.tiles[row].keys():
+        currBoard: Board = level.boards[i]
+        if currBoard.boardType == BoardEnum.ROOM:
+            if locationInBounds(point, currBoard.origin, currBoard.dimensions):
+                return i
+        else:
+            hallwayTiles = currBoard.tiles
+            if first_true(hallwayTiles, default=None,
+                          pred=lambda tile: tile.location == point) is not None:
                 return i
     return -1

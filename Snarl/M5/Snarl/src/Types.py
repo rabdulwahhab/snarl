@@ -33,11 +33,11 @@ class Level:
         self.exitUnlocked = exitUnlocked
         self.playerTurn = playerTurn
         self.currBoard = 0
-        self.items = None
+
 
 
 class Board:
-    def __init__(self, tiles: dict, origin: tuple, dimensions: tuple,
+    def __init__(self, tiles: list, origin: tuple, dimensions: tuple,
                  boardType: BoardEnum,
                  doorLocations: list, players={}, enemies={}):
         self.tiles = tiles
@@ -48,12 +48,14 @@ class Board:
         self.doorLocations = doorLocations
         self.players = players
         self.enemies = enemies
+        self.items = None
 
 
 class Tile:
-    def __init__(self, tileType: TileEnum, items=[]):
+    def __init__(self, tileType: TileEnum, location: tuple, hasKey=False):
         self.tileType = tileType
-        self.items = items
+        self.location = location  # not needed??
+        self.hasKey = hasKey
 
 
 class Player:

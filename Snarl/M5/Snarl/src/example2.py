@@ -22,7 +22,7 @@ room2 = Board(room2Tiles, r2orig, r2dim, BoardEnum.ROOM, r2doors)
 r3orig = (220, 50)
 r3dim = (160, 100)
 r3doors = [(219, 72), exitLoc]
-room3Tiles = createGenericBoardTiles(r3dim, r3orig, r3doors)
+room3Tiles = createGenericBoardTiles(r3dim, r3orig, r3doors, keyLoc)
 room3 = Board(room3Tiles, r3orig, r3dim, BoardEnum.ROOM, r3doors)
 
 h1orig = (100, 50)
