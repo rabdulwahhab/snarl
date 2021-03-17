@@ -1,5 +1,6 @@
 import Globals
 from Types import *
+from Util import getListOfTiles
 from more_itertools import flatten, all_unique
 from functools import reduce
 

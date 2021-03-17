@@ -62,23 +62,26 @@ def convertJsonHallway(fromPoint: list, toPoint: list, waypoints: list):
     allWaypoints = waypoints + [toPoint]
     fromTemp = fromPoint
     tiles = dict()
-    while len(allWaypoints) > 0: # loop through all waypoints
-        toTemp = allWaypoints[0] # current waypoint to segment
-        fromRow, fromCol = intifyTuple(tuple(fromTemp)) # hallway beginning location
-        toRow, toCol = intifyTuple(tuple(toTemp)) # hallway ending location
+    while len(allWaypoints) > 0:  # loop through all waypoints
+        toTemp = allWaypoints[0]  # current waypoint to segment
+        fromRow, fromCol = intifyTuple(
+            tuple(fromTemp))  # hallway beginning location
+        toRow, toCol = intifyTuple(tuple(toTemp))  # hallway ending location
         # tempDict here
-        if fromCol == toCol: # means we have a vertical segment
-            toBigger = toRow > fromRow # means we are going visually down
-            for i in range(0, abs(toRow - fromRow)): # for every row going down
+        if fromCol == toCol:  # means we have a vertical segment
+            toBigger = toRow > fromRow  # means we are going visually down
+            for i in range(0, abs(toRow - fromRow)):  # for every row going down
                 newTilePos = (fromRow + i, fromCol) if toBigger else (
-                    fromRow - i, fromCol) # get the next location
+                    fromRow - i, fromCol)  # get the next location
                 row, col = newTilePos
-                if row in tiles.keys(): # if this row already exists in our tile representation
-                    tiles[row].update({col: Tile(TileEnum.DEFAULT)}) # add a new tile at a column on that row
+                if row in tiles.keys():
+                    tiles[row].update({col: Tile(
+                        TileEnum.DEFAULT)})
                 else:
-                    tiles[row] = {col: Tile(TileEnum.DEFAULT)} # create a row and add a tile at this column
+                    tiles[row] = {col: Tile(
+                        TileEnum.DEFAULT)}
             # add to temp
-        elif fromRow == toRow: # means we have a horizontal segment
+        elif fromRow == toRow:  # means we have a horizontal segment
             tempColDict = dict()
             toBigger = toCol > fromCol
             for i in range(0, abs(toCol - fromCol)):

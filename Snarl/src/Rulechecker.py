@@ -25,7 +25,8 @@ def playerCanMoveTo(destination: tuple, player: Player, level: Level,
     board = level.boards[destBoardNumber]
 
     if isTileOnBoard(destination, board):
-        if board.tiles[destination[0]][destination[1]].tileType is not TileEnum.WALL \
+        if board.tiles[destination[0]][
+            destination[1]].tileType is not TileEnum.WALL \
                 and not destHasPlayer(destination, board):
             return True
     return False
@@ -51,7 +52,8 @@ def enemyCanMoveTo(destination: tuple, enemy: Enemy, level: Level):
 
     board = level.boards[destBoardNumber]
     if isTileOnBoard(destination, board):
-        if board.tiles[destination[0]][destination[1]].tileType is not TileEnum.WALL:
+        if board.tiles[destination[0]][
+            destination[1]].tileType is not TileEnum.WALL:
             return True
     return False
 
