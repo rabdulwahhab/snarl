@@ -1,0 +1,26 @@
+1. Trace includes: OK, Key, Exit, Invalid
+2.
+
+TODO: null move (skip), Ejected in trace (dio extra turn steps on enemy,
+go through max number of turns specified, level over
+
+test1 skeleton:
+
+[ state,
+  [ initPlayerUpdateFerd,
+    initPlayerUpdateDio,
+    ferdMove1Resp, // MOVE ONTO KEY
+    playerUpdateFerd,
+    playerUpdateDio,
+    dioMove1Resp, // INVALID MOVE ONTO WALL
+    dioMove1-bResp, // MOVE ONTO EXIT
+    playerUpdateFerd,
+    playerUpdateDio,
+    ferdMove2Resp, // VALID NORMAL MOVE
+    playerUpdateFerd,
+    playerUpdateDio,
+    dioMove2Resp, // VALID 2 STEP DIAGONAL MOVE
+    playerUpdateFerd,
+    playerUpdateDio,
+  ]
+]
