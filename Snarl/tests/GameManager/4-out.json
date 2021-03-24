@@ -70,27 +70,22 @@
     [ "dio",
       { "type": "player-update",
         "layout": [ [0, 0, 2, 0, 0],
-                    [0, 1, 1, 1, 0],
-                    [0, 1, 1, 1, 0],
-                    [0, 1, 1, 1, 0],
+                    [0, 1, 1, 0, 0],
+                    [0, 1, 1, 0, 0],
+                    [0, 2, 0, 0, 0],
                     [0, 0, 0, 0, 0]],
-        "position": [6, 17],
-        "objects": [ { "type": "exit",
-                       "position": [ 7, 17 ]
-                     } ],
-        "actors": [{ "type": "zombie",
-                     "name": "Green man",
-                     "position": [6, 15]
-                   }]
+        "position": [5, 3],
+        "objects": [],
+        "actors": []
     }],
     [ "ferd", { "type": "move", "to": [4, 2] }, "OK" ],
     [ "ferd",
       { "type": "player-update",
-        "layout": [ [0, 0, 0, 0, 0],
-                    [0, 0, 0, 2, 0],
-                    [0, 0, 1, 1, 0],
-                    [0, 0, 1, 1, 0],
-                    [0, 0, 2, 0, 0]],
+        "layout": [ [0, 0, 2, 0, 0],
+                    [0, 1, 1, 0, 0],
+                    [0, 1, 1, 0, 0],
+                    [0, 2, 0, 0, 0],
+                    [0, 0, 0, 0, 0]],
         "position": [4, 2],
         "objects": [],
         "actors": []
@@ -98,21 +93,15 @@
     [ "dio",
       { "type": "player-update",
         "layout": [ [0, 0, 2, 0, 0],
-                    [0, 1, 1, 1, 0],
-                    [0, 1, 1, 1, 0],
-                    [0, 1, 1, 1, 0],
+                    [0, 1, 1, 0, 0],
+                    [0, 1, 1, 0, 0],
+                    [0, 2, 0, 0, 0],
                     [0, 0, 0, 0, 0]],
-        "position": [6, 17],
-        "objects": [ { "type": "exit",
-                       "position": [ 7, 17 ]
-                     } ],
-        "actors": [{ "type": "zombie",
-                     "name": "Green man",
-                     "position": [6, 15]
-                   }]
+        "position": [4, 2],
+        "objects": [],
+        "actors": []
     }],
-    [ "dio", { "type": "move", "to": [6, 18] }, "Invalid" ],
-    [ "dio", { "type": "move", "to": [7, 17] }, "Exit" ],
+    [ "dio", { "type": "move", "to": null }, "OK" ],
     [ "ferd",
       { "type": "player-update",
         "layout": [ [0, 0, 0, 0, 0],
@@ -127,18 +116,26 @@
     [ "dio",
       { "type": "player-update",
         "layout": [ [0, 0, 2, 0, 0],
-                    [0, 1, 1, 1, 0],
-                    [0, 1, 1, 1, 0],
-                    [0, 1, 1, 1, 0],
+                    [0, 1, 1, 0, 0],
+                    [0, 1, 1, 0, 0],
+                    [0, 2, 0, 0, 0],
                     [0, 0, 0, 0, 0]],
-        "position": [6, 17],
-        "objects": [ { "type": "exit",
-                       "position": [ 7, 17 ]
-                     } ],
-        "actors": [{ "type": "zombie",
-                     "name": "Green man",
-                     "position": [6, 15]
-                   }]
-    }]
+        "position": [4, 2],
+        "objects": [],
+        "actors": []
+    }],
+    [ "ferd", { "type": "move", "to": [4, 3] }, "Eject" ],
+    [ "dio",
+      { "type": "player-update",
+        "layout": [ [0, 0, 2, 0, 0],
+                    [0, 1, 1, 0, 0],
+                    [0, 1, 1, 0, 0],
+                    [0, 2, 0, 0, 0],
+                    [0, 0, 0, 0, 0]],
+        "position": [4, 2],
+        "objects": [],
+        "actors": []
+    }],
+    [ "dio", { "type": "move", "to": [4, 3] }, "Eject" ]
   ]
 ]

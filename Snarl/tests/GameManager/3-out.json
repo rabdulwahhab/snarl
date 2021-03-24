@@ -40,10 +40,6 @@
       { "type": "player",
         "name": "ferd",
         "position": [5, 2]
-      },
-      { "type": "player",
-        "name": "dio",
-        "position": [5, 15]
       }
     ],
     "adversaries": [
@@ -111,8 +107,7 @@
                      "position": [6, 15]
                    }]
     }],
-    [ "dio", { "type": "move", "to": [6, 18] }, "Invalid" ],
-    [ "dio", { "type": "move", "to": [7, 17] }, "Exit" ],
+    [ "dio", { "type": "move", "to": [6, 15] }, "Eject" ],
     [ "ferd",
       { "type": "player-update",
         "layout": [ [0, 0, 0, 0, 0],
@@ -123,22 +118,6 @@
         "position": [4, 2],
         "objects": [],
         "actors": []
-    }],
-    [ "dio",
-      { "type": "player-update",
-        "layout": [ [0, 0, 2, 0, 0],
-                    [0, 1, 1, 1, 0],
-                    [0, 1, 1, 1, 0],
-                    [0, 1, 1, 1, 0],
-                    [0, 0, 0, 0, 0]],
-        "position": [6, 17],
-        "objects": [ { "type": "exit",
-                       "position": [ 7, 17 ]
-                     } ],
-        "actors": [{ "type": "zombie",
-                     "name": "Green man",
-                     "position": [6, 15]
-                   }]
     }]
   ]
 ]

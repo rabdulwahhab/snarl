@@ -112,7 +112,7 @@
                    }]
     }],
     [ "dio", { "type": "move", "to": [6, 18] }, "Invalid" ],
-    [ "dio", { "type": "move", "to": [7, 17] }, "Exit" ],
+    [ "dio", { "type": "move", "to": null }, "OK" ],
     [ "ferd",
       { "type": "player-update",
         "layout": [ [0, 0, 0, 0, 0],

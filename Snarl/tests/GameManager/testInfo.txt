@@ -1,5 +1,7 @@
 1. Trace includes: OK, Key, Exit, Invalid
-2.
+2. 1 turn, second move is null
+3. 2 turn, second move dio runs into enemy and vanishes
+4. 2 turns, both players leave unlocked exit (start with exitUnlocked to cheat)
 
 TODO: null move (skip), Ejected in trace (dio extra turn steps on enemy,
 go through max number of turns specified, level over
@@ -24,3 +26,5 @@ test1 skeleton:
     playerUpdateDio,
   ]
 ]
+
+// TODO check manager trace indiv move format
