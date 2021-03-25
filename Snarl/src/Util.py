@@ -140,3 +140,30 @@ def isTileOnBoard(location: tuple, board: Board):
         if location[1] in board.tiles[location[0]].keys():
             return True
     return False
+
+
+def isDoorLocation(location: tuple, game: Dungeon):
+    for level in game.levels:
+        for board in level.boards:
+            if location in board.doorLocations:
+                return True
+    return False
+
+
+def isTraversable(location: tuple, game: Dungeon):
+    for level in game.levels:
+        for board in level.boards:
+            if location[0] in board.tiles.keys():
+                if location[1] in board.tiles[location[0]].keys():
+                    tile: Tile = board.tiles[location[0]][location[1]]
+                    if tile.tileType is not TileEnum.WALL:
+                        return True
+    return False
+
+
+def isPlayerInGame(playerName: str, game: Dungeon):
+    for level in game.levels:
+        for board in level.boards:
+            if playerName in board.players.keys():
+                return True
+    return False

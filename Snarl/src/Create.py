@@ -66,11 +66,8 @@ def removePlayersFromBoard(board: Board, players: dict):
     returns: new board
     """
     newPlayers = board.players.copy()
-    log("current players", str(newPlayers))
     for playerName in players.keys():
-        log("REMOVED A PLAYER!!!!,", playerName)
         del newPlayers[playerName]
-    log("after remove playres", str(newPlayers))
     updatedBoard = Board(board.tiles, board.origin, board.dimensions,
                          board.boardType, board.doorLocations, newPlayers,
                          board.enemies)

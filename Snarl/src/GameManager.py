@@ -83,7 +83,6 @@ def interactWithKey(location: tuple, game: Dungeon):
     """
     level = game.levels[game.currLevel]
     if level.keyLocation == location:
-        log("GRABBED KEY")
         level.exitUnlocked = True
     return game
 
@@ -133,8 +132,7 @@ def advanceLevel(game: Dungeon):
     newLocations = []
     while len(newLocations) < len(allPlayers):
         firstDoorLoc = nextBoard.doorLocations[0]
-        newLocations += playerPossibleCardinalMoves(firstDoorLoc, 1, nextLevel,
-                                                    nextLevelNum)
+        newLocations += playerPossibleCardinalMoves(firstDoorLoc, 1, nextLevel)
 
     for playerName in allPlayers.keys():
         player: Player = nextBoard.players[playerName]
