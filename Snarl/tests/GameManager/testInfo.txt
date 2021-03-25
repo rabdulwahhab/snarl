@@ -1,4 +1,4 @@
-1. Trace includes: OK, Key, Exit, Invalid
+1. Trace includes: OK, Key, Exit, Invalid --> Ferd moves key, Dio invalid, Dio exit
 2. 1 turn, second move is null
 3. 2 turn, second move dio runs into enemy and vanishes
 4. 2 turns, both players leave unlocked exit (start with exitUnlocked to cheat)

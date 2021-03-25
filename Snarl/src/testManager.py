@@ -1,6 +1,6 @@
 import sys
 import json
-from Util import intifyTuple, whichBoardInLevel, logInFile
+from Util import intifyTuple, whichBoardInLevel, locationInLevelBounds, logInFile
 from Convert import convertJsonDungeon
 from Types import *
 import GameManager
@@ -81,38 +81,31 @@ def isTraversable(location: tuple, game: Dungeon):
     return False
 
 
-def getTileType(possMoves: list, location: tuple, game: Dungeon):
+def getTileType(location: tuple, game: Dungeon):
     """
     Return 0, 1, or 2 depending on what lies
     at the given location
     """
-    log("REL LOC: " , str(location))
     if isDoorLocation(location, game):
-        log(str("door"))
         return 2
-    elif location in possMoves and isTraversable(location, game):
-        log(str("trav"))
+    elif isTraversable(location, game):
         return 1
     else:
-        log(str("rip"))
         return 0
 
 
-def getTileLayout(possMoves: list, game: Dungeon, player: Player):
-    log("Poss Moves:", str(possMoves))
-    layout = [[0, 0, -1, 0, 0],
-              [0, -1, -1, -1, 0],
-              [-1, -1, 1, -1, -1],
-              [0, -1, -1, -1, 0],
-              [0, 0, -1, 0, 0]]
+def getTileLayout(game: Dungeon, player: Player):
+    layout = [[-1, -1, -1, -1, -1],
+              [-1, -1, -1, -1, -1],
+              [-1, -1, -1, -1, -1],
+              [-1, -1, -1, -1, -1],
+              [-1, -1, -1, -1, -1]]
     pRow, pCol = player.location
     origin = (pRow - 2, pCol - 2)
     for r in range(5):
         for c in range(5):
-            loc = layout[r][c]
             relLoc = (origin[0] + r, origin[1] + c)
-            if loc is -1:
-                layout[r][c] = getTileType(possMoves, relLoc, game)
+            layout[r][c] = getTileType(relLoc, game)
     return layout
 
 
@@ -143,6 +136,18 @@ def getObjectsAroundPlayer(possMoves: list, game: Dungeon):
     return acc
 
 
+def getFieldOfView(player: Player, level: Level):
+    pLocRow, pLocCol = player.location
+    origin = (pLocRow - 2, pLocCol - 2)
+    fieldOfView = []
+    for r in range(5):
+        for c in range(5):
+            relLoc = (origin[0] + r, origin[1] + c)
+            if locationInLevelBounds(level, relLoc):
+                fieldOfView.append(relLoc)
+    return fieldOfView
+
+
 def getPlayerUpdate(playerName: str, game: Dungeon):
     """
     PlayerUpdateType is:
@@ -163,13 +168,10 @@ def getPlayerUpdate(playerName: str, game: Dungeon):
 
     """
     player: Player = getPlayer(game.levels[game.currLevel], playerName)
-    playerBoardNum = whichBoardInLevel(game.levels[game.currLevel],
-                                       player.location)
-    possMoves = playerPossibleCardinalMoves(player.location, 2,
-                                            game.levels[game.currLevel])
+    possMoves = getFieldOfView(player, game.levels[game.currLevel])
     output = [playerName,
               {"type":     "player-update",
-               "layout":   getTileLayout(possMoves, game, player),
+               "layout":   getTileLayout(game, player),
                "position": [player.location[0], player.location[1]],
                "objects":  getObjectsAroundPlayer(possMoves, game),
                "actors":   getEnemiesAroundPlayer(possMoves, game)}]
@@ -178,9 +180,7 @@ def getPlayerUpdate(playerName: str, game: Dungeon):
 
 def isPlayerInGame(playerName: str, game: Dungeon):
     for level in game.levels:
-        log("ONE")
         for board in level.boards:
-            log("board players: ", str(board.players.keys()))
             if playerName in board.players.keys():
                 return True
     return False
@@ -234,17 +234,17 @@ def executeTurns(game: Dungeon, maxNumTurns: int, jsonActorMoveListList: list,
 
                 currLevel: Level = game.levels[game.currLevel]
                 player = getPlayer(currLevel, playerName)  # pot bug??
-                dest = intifyTuple(move["to"])
+                dest = move["to"]
                 # apply
                 if not dest:  # skipped turn
-                    log("not dest")
+                    log("not dest, so null")
                     validMove = True
                     managerTrace.append(
                         [playerName, move, "OK"])  # pot bug adding??
                     managerTrace = getPlayersUpdates(game, managerTrace)
-                elif playerCanMoveTo(dest, player, currLevel, 2):
+                elif playerCanMoveTo(intifyTuple(dest), player, currLevel, 2):
                     log("playerCanMove")
-                    GameManager.move(playerName, dest,
+                    GameManager.move(playerName, intifyTuple(dest),
                                      game)  # pot bug not mutating??
                     log("moved")
                     managerTrace.append(getMoveStatus(currLevel, playerName,
@@ -288,17 +288,15 @@ def getFinalState(game: Dungeon, jsonLevel: dict, jsonEnemies: list):
     players = []
     for playerName in game.players:
 
-        log("FINAL STATTTTTEEE:", playerName)
         if isPlayerInGame(playerName, game):
-            log("aliiiiiive", playerName)
             player: Player = getPlayer(game.levels[game.currLevel], playerName)
             newPlayer = {"type":     "player", "name": playerName,
                          "position": player.location}
             players.append(newPlayer)
-    exitUnlocked = not game.levels[game.currLevel].exitUnlocked
+    exitLocked = not game.levels[game.currLevel].exitUnlocked
     return {
         "type":        "state", "level": jsonLevel, "players": players,
-        "adversaries": jsonEnemies, "exit-unlocked": exitUnlocked}
+        "adversaries": jsonEnemies, "exit-locked": exitLocked}
 
 
 def main():

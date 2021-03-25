@@ -1,8 +1,9 @@
 from Types import *
 from Util import whichBoardInLevel, getLocationsAround, locationInBounds, \
-    locationInLevelBounds, isTileOnBoard
+    locationInLevelBounds, isTileOnBoard, logInFile
 from more_itertools import unique_everseen
 
+log = logInFile("Rulechecker.py")
 
 def playerCanMoveTo(destination: tuple, player: Player, level: Level,
                     numMoves: int):
@@ -19,12 +20,15 @@ def playerCanMoveTo(destination: tuple, player: Player, level: Level,
     playerBoardNumber = whichBoardInLevel(level, player.location)
     possibleMoves = playerPossibleCardinalMoves(player.location, numMoves,
                                                 level)
+    log("POSSIBLE MOVES:", str(possibleMoves))
     if destination not in possibleMoves:
+        log("dest not in poss moves", str(destination))
         return False
 
     board = level.boards[destBoardNumber]
 
     if isTileOnBoard(destination, board):
+        log("tile is on board!", str(destination))
         if board.tiles[destination[0]][
             destination[1]].tileType is not TileEnum.WALL \
                 and not destHasPlayer(destination, board):

@@ -18,8 +18,6 @@ def move(playerName: str, destination: tuple, game: Dungeon):
     currLevel: Level = game.levels[game.currLevel]
     currBoardNum = whichBoardInLevel(currLevel, destination)
     currBoard: Board = currLevel.boards[currBoardNum]
-    log("currBoard = ", str(currBoardNum))
-    log("players:", str(currBoard.players.keys()))
     player = currBoard.players[playerName]
     numMoves = 2
     if playerCanMoveTo(destination, player, currLevel, numMoves):
@@ -85,6 +83,7 @@ def interactWithKey(location: tuple, game: Dungeon):
     """
     level = game.levels[game.currLevel]
     if level.keyLocation == location:
+        log("GRABBED KEY")
         level.exitUnlocked = True
     return game
 

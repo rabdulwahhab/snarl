@@ -39,8 +39,6 @@
   [ [ { "type": "move", "to": [4, 2] },
       { "type": "move", "to": [5, 2] }
     ],
-    [ { "type": "move", "to": [6, 16] },
-      { "type": "move", "to": [6, 15] }
-    ]
+    [ { "type": "move", "to": [6, 15] } ]
   ]
 ]
