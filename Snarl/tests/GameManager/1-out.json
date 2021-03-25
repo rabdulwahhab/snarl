@@ -39,16 +39,12 @@
     "players": [
       { "type": "player",
         "name": "ferd",
-        "position": [5, 2]
-      },
-      { "type": "player",
-        "name": "dio",
-        "position": [5, 15]
+        "position": [4, 2]
       }
     ],
     "adversaries": [
       { "type": "zombie",
-        "name": "Green man",
+        "name": "creature1",
         "position": [6, 15]
       }
     ],

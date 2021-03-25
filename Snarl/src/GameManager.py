@@ -3,6 +3,7 @@ from Create import createDungeon, addPlayersToBoard, removePlayersFromBoard
 from Move import moveEntity
 from Rulechecker import playerPossibleCardinalMoves, \
     destHasEnemy, destHasKey, destHasExit, playerCanMoveTo
+from Util import whichBoardInLevel, log
 
 
 def move(playerName: str, destination: tuple, game: Dungeon):
@@ -15,8 +16,10 @@ def move(playerName: str, destination: tuple, game: Dungeon):
     :param game: Dungeon
     """
     currLevel: Level = game.levels[game.currLevel]
-    currBoardNum = currLevel.currBoard
+    currBoardNum = whichBoardInLevel(currLevel, destination)
     currBoard: Board = currLevel.boards[currBoardNum]
+    log("currBoard = ", str(currBoardNum))
+    log("players:", str(currBoard.players.keys()))
     player = currBoard.players[playerName]
     numMoves = 2
     if playerCanMoveTo(destination, player, currLevel, numMoves):
@@ -38,7 +41,8 @@ def interact(playerName: str, location: tuple, game: Dungeon):
     :param game: Dungeon
     """
     currLevel: Level = game.levels[game.currLevel]
-    currBoard: Board = currLevel.boards[currLevel.currBoard]
+    currBoardNum = whichBoardInLevel(currLevel, location)
+    currBoard: Board = currLevel.boards[currBoardNum]
 
     if destHasEnemy(location, currBoard):
         return interactWithEnemy(playerName, location, game)
@@ -62,7 +66,8 @@ def interactWithEnemy(playerName: str, location: tuple, game: Dungeon):
     :param game: Dungeon
     """
     currLevel: Level = game.levels[game.currLevel]
-    currBoard: Board = currLevel.boards[currLevel.currBoard]
+    currBoardNum = whichBoardInLevel(currLevel, location)
+    currBoard: Board = currLevel.boards[currBoardNum]
     for enemyName in currBoard.enemies.keys():
         enemy: Enemy = currBoard.enemies[enemyName]
         if location == enemy.location:  # fight!
@@ -84,18 +89,19 @@ def interactWithKey(location: tuple, game: Dungeon):
     return game
 
 
-def removePlayer(playerName: str, game: Dungeon):
+def removePlayer(playerName: str, currBoardNum: int, game: Dungeon):
     """
     Removes the player from the level and returns the
     updated game.
     :param playerName: str
+    :param currBoardNum: int
     :param game: Dungeon
     """
     currLevel: Level = game.levels[game.currLevel]
-    currBoard: Board = currLevel.boards[currLevel.currBoard]
+    currBoard: Board = currLevel.boards[currBoardNum]
     player = currBoard.players[playerName]
     updatedBoard = removePlayersFromBoard(currBoard, {playerName: player})
-    currLevel.boards[currLevel.currBoard] = updatedBoard
+    currLevel.boards[currBoardNum] = updatedBoard
     return game
 
 
@@ -115,6 +121,7 @@ def advanceLevel(game: Dungeon):
 
     game.currLevel = nextLevelNum
     currLevel: Level = game.levels[game.currLevel]
+    # TODO is currBoard needed here???
     currBoard: Board = currLevel.boards[currLevel.currBoard]
 
     allPlayers = currBoard.players.copy()
@@ -148,12 +155,13 @@ def interactWithExit(playerName: str, location: tuple, game: Dungeon):
     for level in game.levels:
         if location == level.exitLocation:
             if level.exitUnlocked:
-                currBoard: Board = level.boards[level.currBoard]
+                currBoardNum = whichBoardInLevel(level, location)
+                currBoard: Board = level.boards[currBoardNum]
                 if len(currBoard.players.values()) == 1:  # last player
                     # FIXME return advanceLevel(game)
-                    return removePlayer(playerName, game)
+                    return removePlayer(playerName, currBoardNum, game)
                 else:
-                    return removePlayer(playerName, game)
+                    return removePlayer(playerName, currBoardNum, game)
     return game
 
 
@@ -182,7 +190,8 @@ def addPlayer(player: Player, game: Dungeon):
     :param game: Dungeon
     """
     currLevel: Level = game.levels[game.currLevel]
-    currBoard: Board = currLevel.boards[currLevel.currBoard]
+    currBoardNum = whichBoardInLevel(currLevel, player.location)
+    currBoard: Board = currLevel.boards[currBoardNum]
     updatedBoard = addPlayersToBoard(currBoard, {player.name: player})
     game.levels[game.currLevel] = updatedBoard
 

@@ -69,9 +69,10 @@ class Player:
 
 
 class Enemy:
-    def __init__(self, name: str, location: tuple):
+    def __init__(self, name: str, location: tuple, enemyType="zombie"):
         self.name = name
         self.location = location
+        self.enemyType = enemyType
         self.health = None
         self.damageOutput = None
 

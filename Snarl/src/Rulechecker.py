@@ -18,7 +18,7 @@ def playerCanMoveTo(destination: tuple, player: Player, level: Level,
     destBoardNumber = whichBoardInLevel(level, destination)
     playerBoardNumber = whichBoardInLevel(level, player.location)
     possibleMoves = playerPossibleCardinalMoves(player.location, numMoves,
-                                                level, playerBoardNumber)
+                                                level)
     if destination not in possibleMoves:
         return False
 
@@ -45,7 +45,7 @@ def enemyCanMoveTo(destination: tuple, enemy: Enemy, level: Level):
     # TODO: will need to change to enemyPossibleCardinalMoves when specs for
     #  enemy movement come in, for now using player cardinal movement.
     possibleMoves = playerPossibleCardinalMoves(enemy.location, 2,
-                                                level, enemyBoardNumber)
+                                                level)
 
     if destination not in possibleMoves:
         return False
@@ -58,16 +58,14 @@ def enemyCanMoveTo(destination: tuple, enemy: Enemy, level: Level):
     return False
 
 
-def playerPossibleCardinalMoves(location: tuple, numMoves: int, level: Level,
-                                boardNumber: int):
+# TODO: FIX ME: Should see board number thing
+def playerPossibleCardinalMoves(location: tuple, numMoves: int, level: Level):
     """
     Outputs the possible moves for a player given the number of cardinal moves.
     :param location: tuple
     :param numMoves: int
     :param level: Level
-    :param boardNumber: int
     """
-    board = level.boards[boardNumber]
     possibleMoves = []
     while numMoves > 0:
         if len(possibleMoves) == 0:
@@ -78,13 +76,11 @@ def playerPossibleCardinalMoves(location: tuple, numMoves: int, level: Level,
             temp = []
             for loc in possibleMoves:
                 temp += list(filter(
-                    lambda lamLoc: locationInBounds(lamLoc, board.origin,
-                                                    board.dimensions),
+                    lambda lamLoc: locationInLevelBounds(level, lamLoc),
                     getLocationsAround(loc)))
             possibleMoves += temp
+        possibleMoves = list(unique_everseen(possibleMoves, key=tuple))
         numMoves -= 1
-        possibleMoves = list(unique_everseen(possibleMoves))
-
     return possibleMoves
 
 

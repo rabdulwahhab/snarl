@@ -1,0 +1,5 @@
+#!/bin/bash
+
+# run test harness
+
+python3 ../../src/testManager.py

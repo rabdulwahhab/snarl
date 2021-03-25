@@ -89,8 +89,13 @@ def getLocationsAround(location: tuple):
 
 def locationInLevelBounds(level: Level, location: tuple):
     for board in level.boards:
-        if locationInBounds(location, board.origin, board.dimensions):
-            return True
+        if board.boardType == BoardEnum.HALLWAY:
+            if location[0] in board.tiles.keys():
+                if location[1] in board.tiles[location[0]].keys():
+                    return True
+        else: # TODO the minute levels aren't rectangles, fix this
+            if locationInBounds(location, board.origin, board.dimensions):
+                return True
     return False
 
 
