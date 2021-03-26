@@ -136,3 +136,10 @@ def renderDungeon(background: pygame.Surface, dungeon: Dungeon):
     log = logInFile("Render.py", "renderDungeon")
     log()
     renderLevel(background, dungeon.levels[dungeon.currLevel])
+
+
+def renderPlayerView(background: pygame.Surface, view: PlayerView):
+    for row in view.tiles.keys():
+        for col in view.tiles[row].keys():
+            tile: Tile = view.tiles[row][col]
+            renderTile(background, tile.tileType, row, col)

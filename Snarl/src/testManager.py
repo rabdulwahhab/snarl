@@ -1,7 +1,7 @@
 import sys
 import json
 from Util import intifyTuple, whichBoardInLevel, locationInLevelBounds, \
-    isDoorLocation, isTraversable, isPlayerInGame, logInFile
+    isDoorLocation, isTraversable, isPlayerInGame, getPlayer, logInFile
 from Convert import convertJsonDungeon
 from Types import *
 import GameManager
@@ -49,14 +49,6 @@ def anyOutOfMoves(jsonActorMoveListList: list):
         if len(moveList) == 0:
             return True
     return False
-
-
-def getPlayer(level: Level, playerName: str):
-    for board in level.boards:
-        if playerName in board.players.keys():
-            return board.players[playerName]
-    return None
-
 
 
 

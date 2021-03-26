@@ -83,3 +83,13 @@ class Item:
         self.location = location
         self.hasBeenAcquired = hasBeenAcquired
         self.effect = None
+
+
+class PlayerView:
+    def __init__(self, name: str, tiles: dict, position: tuple, objects=[], players=[], enemies=[]):
+        self.name = name
+        self.tiles = tiles # with absolute locations
+        self.position = position
+        self.objects = objects
+        self.players = players
+        self.enemies = enemies

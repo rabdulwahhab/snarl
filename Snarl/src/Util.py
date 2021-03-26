@@ -167,3 +167,10 @@ def isPlayerInGame(playerName: str, game: Dungeon):
             if playerName in board.players.keys():
                 return True
     return False
+
+
+def getPlayer(level: Level, playerName: str):
+    for board in level.boards:
+        if playerName in board.players.keys():
+            return board.players[playerName]
+    return None
