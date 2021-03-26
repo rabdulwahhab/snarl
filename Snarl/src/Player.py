@@ -4,37 +4,19 @@ from Convert import convertJsonPlayer, convertJsonEnemy
 import GameManager
 from more_itertools import first_true
 
-"""
-Human User module where functions represent actions to dispatch on User events
-
-receiveUpdate: currLoc, game -> None (render + other side effects)
-makeMove: location -> None (send move to GameManager)
-startGame(playerName: str) -> None
-joinGame(playerName: str, gameName: str) -> None
-move(playerName: str, location: tuple) -> None
-stayPut(playerName: str) -> None
-whereAmI(playerName: str) -> Location (tuple)
-howMuchCanISee(playerName:str) -> List[Tiles
-
-A message is:
-
-{type: str, data: X}
-"""
-
 
 def receivePlayerUpdate(update: dict, playerName: str):
     """
     Receive differences in game state and apply deltas to the given game view.
     :params update: dict (player-update)
     {
-  "type": "player-update",
-  "layout": (tile-layout),
-  "position": (point),
-  "objects": (object-list),
-  "actors": (actor-position-list)
-}
+      "type": "player-update",
+      "layout": (tile-layout),
+      "position": (point),
+      "objects": (object-list),
+      "actors": (actor-position-list)
+    }
     """
-    # assign layout -> FOV, change playerName player location
     position = update["position"]
     tiles = convertLayoutToTiles(update["layout"], position)
     players = [convertJsonPlayer(actorJson) for actorJson in update["actors"] if

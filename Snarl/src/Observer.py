@@ -2,13 +2,6 @@ from Types import *
 from Convert import convertJsonPlayer, convertJsonEnemy
 from more_itertools import first_true
 
-"""
-receiveUpdate(update) -> None (show to observer)
-registerObserver(id) -> None (init local state to show)
-unregisterObserver() -> None (leave observing)
-
-"""
-
 
 def receiveUpdate(observer: ObserverView, gameUpdate: list):
     """
