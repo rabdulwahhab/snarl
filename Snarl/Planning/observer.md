@@ -1,7 +1,7 @@
 ## Observer
 
 ### Setup/Teardown Functionality:
-The observer can register to look at a game at the beginning. Once they have been registered, they will receive updated from theGame Manager.
+The observer can register to look at a game at the beginning. Once they have been registered, they will receive updates from theGame Manager.
 - `registerObserver(observerId: str) -> RegistrationResponse`
 - `unRegisterObserver(observerId: str) -> RegistrationResponse`
   
