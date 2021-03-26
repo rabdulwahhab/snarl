@@ -2,6 +2,7 @@ from Types import *
 from Util import locationInLevelBounds, getPlayer
 from Convert import convertJsonPlayer, convertJsonEnemy
 import GameManager
+from more_itertools import first_true
 
 """
 Human User module where functions represent actions to dispatch on User events
@@ -41,7 +42,12 @@ def receivePlayerUpdate(update: dict, playerName: str):
     enemies = [convertJsonEnemy(actorJson) for actorJson in update["actors"]
                if actorJson["type"] != "player"]
 
-    view = PlayerView(playerName, tiles, position, update["objects"], players,
+    keyObj = first_true(update["objects"],
+                        pred=lambda obj: obj["type"] == "key")
+    exitObj = first_true(update["objects"],
+                         pred=lambda obj: obj["type"] == "exit")
+
+    view = PlayerView(playerName, tiles, position, keyObj, exitObj, players,
                       enemies)
     return view
 

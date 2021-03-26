@@ -16,11 +16,12 @@ class TileEnum(Enum):
 
 class Dungeon:
     def __init__(self, levels: list, players: list, currLevel: int,
-                 isGameOver: bool):
+                 isGameOver: bool, name="default"):
         self.levels = levels
         self.players = players
         self.currLevel = currLevel
         self.isGameOver = isGameOver
+        self.name = name
 
 
 class Level:
@@ -86,10 +87,25 @@ class Item:
 
 
 class PlayerView:
-    def __init__(self, name: str, tiles: dict, position: tuple, objects=[], players=[], enemies=[]):
+    def __init__(self, name: str, tiles: dict, position: tuple, keyObj=None,
+                 exitObj=None,
+                 players=[], enemies=[]):
         self.name = name
-        self.tiles = tiles # with absolute locations
+        self.tiles = tiles  # 5x5 of times with absolute locations
         self.position = position
-        self.objects = objects
+        self.keyObj = keyObj
+        self.exitObj = exitObj
         self.players = players
         self.enemies = enemies
+
+
+class ObserverView:
+    def __init__(self, name: str, tiles: dict, keyObj=None, exitObj=None,
+                 players=[], enemies=[], history=[]):
+        self.name = name
+        self.tiles = tiles  # all tiles with absolute locations
+        self.keyObj = keyObj
+        self.exitObj = exitObj
+        self.players = players
+        self.enemies = enemies
+        self.history = history

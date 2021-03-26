@@ -1,7 +1,7 @@
 import pygame
 import Colors
 import Globals
-from Util import getScreenLocation, logInFile, formatInitial
+from Util import getScreenLocation, logInFile, formatInitial, log
 from Types import *
 
 
@@ -93,18 +93,21 @@ def renderItems(background: pygame.Surface, items):
             renderItem(background, item)
 
 
+def renderTiles(background, tiles, exitLoc, keyLoc):
+    for row in tiles.keys():
+        for col in tiles[row].keys():
+            tile = tiles[row][col]
+            hasKey = (row, col) == keyLoc
+            hasExit = (row, col) == exitLoc
+            renderTile(background, tile.tileType, row, col, hasKey, hasExit)
+
+
 def renderBoard(background: pygame.Surface, board: Board, keyLoc: tuple,
                 exitLoc: tuple):
     # FIXME only Rooms should render door tiles
     log = logInFile("Render.py", "renderBoard")
     log()
-    for row in board.tiles.keys():
-        for col in board.tiles[row].keys():
-            tile = board.tiles[row][col]
-            hasKey = (row, col) == keyLoc
-            hasExit = (row, col) == exitLoc
-            renderTile(background, tile.tileType, row, col, hasKey, hasExit)
-
+    renderTiles(background, board.tiles, exitLoc, keyLoc)
     log("Players in board:", str(board.players))
     renderPlayers(background, board.players)
     renderEnemies(background, board.enemies)
@@ -139,7 +142,16 @@ def renderDungeon(background: pygame.Surface, dungeon: Dungeon):
 
 
 def renderPlayerView(background: pygame.Surface, view: PlayerView):
-    for row in view.tiles.keys():
-        for col in view.tiles[row].keys():
-            tile: Tile = view.tiles[row][col]
-            renderTile(background, tile.tileType, row, col)
+    renderTiles(background, view.tiles, view.exitObj["location"],
+                view.keyObj["location"])
+    renderPlayers(background, view.players)
+    renderEnemies(background, view.enemies)
+
+
+def renderObserverView(background: pygame.Surface, view: ObserverView):
+    renderTiles(background, view.tiles, view.exitObj["location"],
+                view.keyObj["location"])
+    renderPlayers(background, view.players)
+    renderEnemies(background, view.enemies)
+    if len(view.history) > 0:
+        log(str(view.history[-1]))
