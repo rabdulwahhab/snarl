@@ -44,16 +44,25 @@ def renderEnemy(background: pygame.Surface, enemy: Enemy):
     background.blit(enemyLetter, tileRect.topleft)
 
 
-def renderEnemies(background: pygame.Surface, enemies: dict):
+# def renderEnemies(background: pygame.Surface, enemies: dict):
+#     log = logInFile("Render.py", "renderEnemies")
+#     log()
+#     enemyNames = enemies.keys()
+#     for name in enemyNames:
+#         enemy = enemies[name]
+#         renderEnemy(background, enemy)
+
+
+def renderEnemies(background: pygame.Surface, enemies: list):
     log = logInFile("Render.py", "renderEnemies")
     log()
-    enemyNames = enemies.keys()
-    for name in enemyNames:
-        enemy = enemies[name]
+    for enemy in enemies:
         renderEnemy(background, enemy)
 
 
 def renderPlayer(background: pygame.Surface, player: Player):
+    log = logInFile("Render.py", "renderPlayer")
+    log("player loc", str(type(player.location)), str(player.location))
     x, y = getScreenLocation(player.location)
     tileRect = pygame.Rect(x, y, Globals.TILE_WIDTH, Globals.TILE_HEIGHT)
     # tileColor = Colors.PLAYER
@@ -66,12 +75,19 @@ def renderPlayer(background: pygame.Surface, player: Player):
     background.blit(playerLetter, tileRect.topleft)
 
 
-def renderPlayers(background: pygame.Surface, players: dict):
+# def renderPlayers(background: pygame.Surface, players: dict):
+#     log = logInFile("Render.py", "renderPlayers")
+#     log()
+#     playerNames = players.keys()
+#     for name in playerNames:
+#         player = players[name]
+#         renderPlayer(background, player)
+
+
+def renderPlayers(background: pygame.Surface, players: list):
     log = logInFile("Render.py", "renderPlayers")
     log()
-    playerNames = players.keys()
-    for name in playerNames:
-        player = players[name]
+    for player in players:
         renderPlayer(background, player)
 
 
@@ -94,6 +110,15 @@ def renderItems(background: pygame.Surface, items):
 
 
 def renderTiles(background, tiles, exitLoc, keyLoc):
+    # npyarr = numpy.array(list(tiles.items())) # convert dict -> numpy array
+    # gen = (row for row in npyarr)
+    # for rowColPair in gen:
+    #   [rowNum, colDict] = rowColPair
+    #   gen2 = (colNum in colDict.keys())
+    #   for colNum in gen2:
+    #       tile = tiles[rowNum][colNum]
+    #       ...
+    #       renderTile(tile)
     for row in tiles.keys():
         for col in tiles[row].keys():
             tile = tiles[row][col]

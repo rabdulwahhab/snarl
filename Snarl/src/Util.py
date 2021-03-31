@@ -65,13 +65,15 @@ def intifyTuple(nonTupleOrTuple: tuple):
     return i1, i2
 
 
-def genXRandCoords(numRandCoord, rejectCoords, dimensions):
+def genXRandCoords(numRandCoord, rejectCoords, origin, dimensions):
     newCoordinates = set()
-    (maxWidth, maxHeight) = dimensions
+    (row, col) = origin
+    (width, height) = dimensions
+    (maxRow, maxCol) = (width + row, height + col)
     i = 0
 
     while i < numRandCoord:
-        newCoord = (randint(0, maxWidth), randint(0, maxHeight))
+        newCoord = (randint(row, maxRow), randint(col, maxCol))
         if newCoord not in newCoordinates and (newCoord not in rejectCoords):
             newCoordinates.add(newCoord)
             i += 1
@@ -85,6 +87,18 @@ def getLocationsAround(location: tuple):
     right = (x + 1, y)
     left = (x - 1, y)
     return [above, right, below, left]
+
+
+def getAllTiles(level: Level):
+    tiles = {}
+    for board in level.boards:
+        for row in board.tiles:
+            for col in board.tiles[row]:
+                if row in tiles.keys():
+                    tiles[row].update({col: board.tiles[row][col]})
+                else:
+                    tiles[row] = {col: board.tiles[row][col]}
+    return tiles
 
 
 def locationInLevelBounds(level: Level, location: tuple):

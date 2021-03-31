@@ -1,16 +1,39 @@
 import sys
+from functools import reduce
+
 import Globals
 import json
 import pygame
 from pygame.locals import *
 import argparse
-from Render import renderDungeon
-from Util import logInFile
+import math
+import random
+from Render import renderPlayerView, renderObserverView
+from Util import logInFile, genXRandCoords, getPlayer, getAllTiles
 from Convert import convertJsonLevel
+from Create import addPlayersToBoard, addEnemiesToBoard
 from Types import *
 import GameManager
 
 log = logInFile("localSnarl.py")
+
+
+def populateEnemies(levelNum: int, levelEnemies: dict, game: Dungeon):
+    for enemyName in levelEnemies.keys():  # Populate enemies in level
+        enemyBoardNum = levelEnemies[enemyName][0]
+        board: Board = game.levels[levelNum].boards[enemyBoardNum]
+        game.levels[levelNum].boards[enemyBoardNum] = addEnemiesToBoard(
+            board, {
+                enemyName: levelEnemies[enemyName][1]})
+
+
+def getRandomRoomInLevel(level: Level):
+    randBoardNum = random.randint(0, len(level.boards) - 1)
+    randBoard: Board = level.boards[randBoardNum]
+    if randBoard.boardType == BoardEnum.HALLWAY:
+        return getRandomRoomInLevel(level)
+    else:
+        return randBoardNum, randBoard
 
 
 def main():
@@ -34,8 +57,7 @@ def main():
                         nargs='?',
                         help="Enter the number of the level to start the game from",
                         const=startLevel, type=int)
-    parser.add_argument("--observe", help="Observe the game", const=isObserving,
-                        type=bool, nargs='?')
+    parser.add_argument("--observe", help="Observe the game", action="store_true")
 
     # this is called after you define your optional args
     args = parser.parse_args()
@@ -58,61 +80,144 @@ def main():
             numLevels = cleaned[0]
             jsonLevels = cleaned[1:]
 
-    if args.players and 1 <= args.players <= 4:
-        log('got players flag', str(args.players))
-        numPlayers = args.players
-    else:
-        print("Players must be from 1-4")
-        sys.exit(1)
+    if args.players:
+        if 1 <= args.players <= 4:
+            log('got players flag', str(args.players))
+            numPlayers = args.players
+        else:
+            print("Players must be from 1-4")
+            sys.exit(1)
 
     if args.start and 0 < args.start <= len(jsonLevels):
         log('got start flag', args.start)
         startLevel = args.start
+
     if args.observe:
-        log('got observe', args.observe)
-        isObserving = args.observe
+        log('got observe')
+        isObserving = True
 
     try:
-        rawJsonGameLevels = jsonLevels[startLevel:]
+        rawJsonGameLevels = jsonLevels[(startLevel - 1):]
         jsonGameLevels = [json.loads(rawJsonLevel) for rawJsonLevel in
                           rawJsonGameLevels]
 
+        # this has all the levels needed with the starting level as the first
+        # element in the list
         levels = [convertJsonLevel(jsonLevel["rooms"], jsonLevel["hallways"],
                                    jsonLevel["objects"]) for jsonLevel in
                   jsonGameLevels]
 
-        players = [input("Player {}, enter your name > ".format(i)) for i in
-                   range(numPlayers)]
+        playerNames = [input("Player {}, enter your name > ".format(i + 1)) for
+                       i in
+                       range(numPlayers)]
 
-        # TODO add players at random locations in level (i.e. modify levels)
+        log("Using levels", str(levels))
+        forbidden = [levels[0].keyLocation, levels[0].exitLocation]
+        players = []
+        playerLocs = []
+        i = 0
+        while i < numPlayers:  # Populate players in level
+            playerName = playerNames[i]
+            randBoardNum, randBoard = getRandomRoomInLevel(levels[0])
+            log("Rand board dimensions", str(randBoard.dimensions))
+            loc = genXRandCoords(1, forbidden, randBoard.origin,
+                                 randBoard.dimensions).pop()
+            if loc not in playerLocs:
+                player = Player(playerName, loc)
+                players.append(player)
+                levels[0].boards[randBoardNum] = addPlayersToBoard(randBoard, {
+                    playerName: player})
+                playerLocs.append(loc)
+                i += 1
 
-        # TODO handle observing
+        game = Dungeon(levels, playerNames, startLevel - 1, False)
 
-        game = Dungeon(levels, players, startLevel - 1, False)
+        enemies = []  # LIST of dictionaries for each level
+        enemyLocs = []
+        for i in range(len(game.levels)):
+            numZombies = math.floor((i + 1) / 2) + 1
+            numGhosts = math.floor(((i + 1) - 1) / 2)
+            levelEnemies = {}
+            for zombie in range(numZombies):
+                randBoardNum, randBoard = getRandomRoomInLevel(levels[0])
+                name = "zombie" + str((zombie + 1))
+                loc = genXRandCoords(1, playerLocs + forbidden + enemyLocs,
+                                     randBoard.origin,
+                                     randBoard.dimensions).pop()
+                enemyLocs.append(loc)
+                newZombie = Enemy(name, loc)
+                levelEnemies[name] = (randBoardNum, newZombie)
+            for ghost in range(numGhosts):
+                randBoardNum, randBoard = getRandomRoomInLevel(levels[0])
+                name = "ghost" + str((ghost + 1))
+                loc = genXRandCoords(1, playerLocs + forbidden + enemyLocs,
+                                     randBoard.origin,
+                                     randBoard.dimensions).pop()
+                enemyLocs.append(loc)
+                newGhost = Enemy(name, loc, "ghost")
+                levelEnemies[name] = (randBoardNum, newGhost)
 
-        # TODO GameManager starts the game now
-        # Congratulations, now begins the main game loop
+            enemies.append(levelEnemies)
+            populateEnemies(i, levelEnemies, game)
+
         # Initialize screen
         pygame.init()
         clock = pygame.time.Clock()
         screen = pygame.display.set_mode(Globals.SCREEN_DIMENSIONS)
-        pygame.display.set_caption("Snarl Demo")
+        pygame.display.set_caption("Local Snarl Demo")
 
         # Fill background. Draw onto this
         background = pygame.Surface(screen.get_size())
-        background = background.convert()  # converts Surface to single-pixel format
+        background = background.convert()  # converts Surface to single-pixel
+        # format
         background.fill(Globals.BG_COLOR)
 
-        renderDungeon(background, game)
+        currLevel: Level = game.levels[game.currLevel]
+        currBoard: Board = currLevel.boards[currLevel.currBoard]
+        keyObj = {"type":     "key",
+                  "location": game.levels[game.currLevel].keyLocation}
+        exitObj = {"type":     "exit",
+                   "location": game.levels[game.currLevel].exitLocation}
+
+        def getEnemies(enemiesDict: list):
+            acc = []
+            for enemiesInLevel in enemiesDict:
+                for enemyName in enemiesInLevel.keys():
+                    acc.append(enemiesInLevel[enemyName][1])
+            return acc
+
+        allEnemies = getEnemies(enemies)
+
+        log("All enemies", str(allEnemies))
+        log("Level has this many boards", str(len(currLevel.boards)))
+
+        if isObserving:
+            log("OBSERVER VIEW")
+            allTiles = getAllTiles(currLevel)
+            view = ObserverView("observer", allTiles, keyObj, exitObj,
+                                players, allEnemies)
+            renderObserverView(background, view)
+        else:
+            log("PLYAER VIEW")
+            playerLoc = getPlayer(currLevel, playerNames[0])
+            view = PlayerView(playerNames[0], currBoard.tiles, playerLoc,
+                              keyObj, exitObj,
+                              players, allEnemies)
+            renderPlayerView(background, view)
 
         while True:
+
             # pygame.time.wait(250)
             clock.tick(30)  # cap at 30fps
+
+            currPlayer = 0
+
+            # TODO user events
+            # handle user events
             for event in pygame.event.get():
                 if event.type == QUIT:
                     sys.exit(0)
 
-            # TODO user events
             """
             gameCollection ---> {gameName: dungeon}
             observerCollection ---> {observerName: gameName}
@@ -127,6 +232,9 @@ def main():
             screen.blit(background, (0, 0))  # render pixels to
             pygame.display.update()  # update
 
+    except FileNotFoundError:
+        print("Couldn't find that level file. Try again")
+        sys.exit(1)
     except json.JSONDecodeError:
         print("Malformed levels")
         sys.exit(1)

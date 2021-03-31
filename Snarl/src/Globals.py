@@ -1,7 +1,8 @@
 from math import floor
+from pygame import font
 
-SCREEN_WIDTH = 1400  # in pixels
-SCREEN_HEIGHT = 800
+SCREEN_WIDTH = 1200  # in pixels
+SCREEN_HEIGHT = 600
 SCREEN_DIMENSIONS = (SCREEN_WIDTH, SCREEN_HEIGHT)
 BG_COLOR = (255, 255, 255)  # white...boring
 
@@ -14,5 +15,5 @@ TILE_HEIGHT = 40
 GAME_WIDTH = floor(SCREEN_WIDTH / TILE_WIDTH)
 GAME_HEIGHT = floor(SCREEN_HEIGHT / TILE_HEIGHT)
 
-# pygame.font.init()
-# FONT = pygame.font.SysFont('arial', 24)
+font.init()
+FONT = font.SysFont('arial', 24)
