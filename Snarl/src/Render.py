@@ -37,24 +37,24 @@ def renderEnemy(background: pygame.Surface, enemy: Enemy):
     tileRect = pygame.Rect(x, y, Globals.TILE_WIDTH, Globals.TILE_HEIGHT)
     # tileColor = Colors.ENEMY
     log = logInFile("Render.py", "renderEnemy")
-    log(enemy.name)
+    log(enemy.enemyType, enemy.name, str(enemy.location))
     enemyLetter = Globals.FONT.render(formatInitial(enemy.name), True,
                                       Colors.ENEMY)
     # pygame.draw.rect(background, tileColor, tileRect)
     background.blit(enemyLetter, tileRect.topleft)
 
 
-# def renderEnemies(background: pygame.Surface, enemies: dict):
-#     log = logInFile("Render.py", "renderEnemies")
-#     log()
-#     enemyNames = enemies.keys()
-#     for name in enemyNames:
-#         enemy = enemies[name]
-#         renderEnemy(background, enemy)
-
-
-def renderEnemies(background: pygame.Surface, enemies: list):
+def renderEnemies(background: pygame.Surface, enemies: dict):
     log = logInFile("Render.py", "renderEnemies")
+    log()
+    enemyNames = enemies.keys()
+    for name in enemyNames:
+        enemy = enemies[name]
+        renderEnemy(background, enemy)
+
+
+def renderEnemiesViews(background: pygame.Surface, enemies: list):
+    log = logInFile("Render.py", "renderEnemiesViews")
     log()
     for enemy in enemies:
         renderEnemy(background, enemy)
@@ -62,30 +62,28 @@ def renderEnemies(background: pygame.Surface, enemies: list):
 
 def renderPlayer(background: pygame.Surface, player: Player):
     log = logInFile("Render.py", "renderPlayer")
-    log("player loc", str(type(player.location)), str(player.location))
+    log(player.name, str(player.location))
     x, y = getScreenLocation(player.location)
     tileRect = pygame.Rect(x, y, Globals.TILE_WIDTH, Globals.TILE_HEIGHT)
     # tileColor = Colors.PLAYER
     # TODO Fonts slow down the loading
-    log = logInFile("Render.py", "renderPlayer")
-    log(player.name)
     playerLetter = Globals.FONT.render(formatInitial(player.name), True,
                                        Colors.BLACK)  # TODO font color
     # pygame.draw.rect(background, tileColor, tileRect)
     background.blit(playerLetter, tileRect.topleft)
 
 
-# def renderPlayers(background: pygame.Surface, players: dict):
-#     log = logInFile("Render.py", "renderPlayers")
-#     log()
-#     playerNames = players.keys()
-#     for name in playerNames:
-#         player = players[name]
-#         renderPlayer(background, player)
-
-
-def renderPlayers(background: pygame.Surface, players: list):
+def renderPlayers(background: pygame.Surface, players: dict):
     log = logInFile("Render.py", "renderPlayers")
+    log()
+    playerNames = players.keys()
+    for name in playerNames:
+        player = players[name]
+        renderPlayer(background, player)
+
+
+def renderPlayersViews(background: pygame.Surface, players: list):
+    log = logInFile("Render.py", "renderPlayersViews")
     log()
     for player in players:
         renderPlayer(background, player)
@@ -109,7 +107,8 @@ def renderItems(background: pygame.Surface, items):
             renderItem(background, item)
 
 
-def renderTiles(background, tiles, exitLoc, keyLoc):
+def renderTiles(background: pygame.Surface, tiles: dict, exitLoc: tuple,
+                keyLoc: tuple):
     # npyarr = numpy.array(list(tiles.items())) # convert dict -> numpy array
     # gen = (row for row in npyarr)
     # for rowColPair in gen:
@@ -167,16 +166,23 @@ def renderDungeon(background: pygame.Surface, dungeon: Dungeon):
 
 
 def renderPlayerView(background: pygame.Surface, view: PlayerView):
-    renderTiles(background, view.tiles, view.exitObj["location"],
-                view.keyObj["location"])
-    renderPlayers(background, view.players)
-    renderEnemies(background, view.enemies)
+    # NOTE could refactor for exit + key locations
+    # clear screen
+    background.fill(Globals.BG_COLOR)
+    log = logInFile("Render.py", "renderPlayerView")
+    log(str(view.keys), str(view.exits))
+    renderTiles(background, view.tiles, view.keys[0],
+                view.exits[0])
+    renderPlayersViews(background, view.players)
+    renderEnemiesViews(background, view.enemies)
 
 
 def renderObserverView(background: pygame.Surface, view: ObserverView):
-    renderTiles(background, view.tiles, view.exitObj["location"],
-                view.keyObj["location"])
-    renderPlayers(background, view.players)
-    renderEnemies(background, view.enemies)
+    # clear screen
+    background.fill(Globals.BG_COLOR)
+    renderTiles(background, view.tiles, view.exits[0],
+                view.keys[0])
+    renderPlayersViews(background, view.players)
+    renderEnemiesViews(background, view.enemies)
     if len(view.history) > 0:
         log(str(view.history[-1]))

@@ -2,6 +2,7 @@ import Globals
 from Types import *
 from random import randint
 from functools import partial, reduce
+import math
 from more_itertools import first_true
 
 
@@ -69,11 +70,13 @@ def genXRandCoords(numRandCoord, rejectCoords, origin, dimensions):
     newCoordinates = set()
     (row, col) = origin
     (width, height) = dimensions
-    (maxRow, maxCol) = (width + row, height + col)
+    (maxRow, maxCol) = (width + row - 1, height + col - 1)
     i = 0
 
     while i < numRandCoord:
-        newCoord = (randint(row, maxRow), randint(col, maxCol))
+        # NOTE forbids wall locations. Can remove if boards no longer
+        # quadrilaterals
+        newCoord = (randint(row + 1, maxRow - 1), randint(col + 1, maxCol - 1))
         if newCoord not in newCoordinates and (newCoord not in rejectCoords):
             newCoordinates.add(newCoord)
             i += 1
@@ -107,7 +110,7 @@ def locationInLevelBounds(level: Level, location: tuple):
             if location[0] in board.tiles.keys():
                 if location[1] in board.tiles[location[0]].keys():
                     return True
-        else: # TODO the minute levels aren't rectangles, fix this
+        else:  # TODO the minute levels aren't rectangles, fix this
             if locationInBounds(location, board.origin, board.dimensions):
                 return True
     return False
@@ -123,7 +126,12 @@ def locationInBounds(location: tuple, origin: tuple, dimension: tuple):
 
 
 def getScreenLocation(location):
-    return location[0] * Globals.TILE_WIDTH, location[1] * Globals.TILE_HEIGHT
+    return location[1] * Globals.TILE_HEIGHT, location[0] * Globals.TILE_WIDTH
+
+
+def translateScreenLocation(absLoc: tuple):
+    return math.floor(absLoc[1] / Globals.TILE_HEIGHT), math.floor(
+        absLoc[0] / Globals.TILE_WIDTH)
 
 
 def formatInitial(name):
@@ -188,3 +196,11 @@ def getPlayer(level: Level, playerName: str):
         if playerName in board.players.keys():
             return board.players[playerName]
     return None
+
+
+def getEnemy(level: Level, enemyName: str):
+    for board in level.boards:
+        if enemyName in board.enemies.keys():
+            return board.players[enemyName]
+    return None
+

@@ -9,10 +9,12 @@ import argparse
 import math
 import random
 from Render import renderPlayerView, renderObserverView
-from Util import logInFile, genXRandCoords, getPlayer, getAllTiles
+from Util import logInFile, genXRandCoords, getPlayer, getAllTiles, \
+    translateScreenLocation, whichBoardInLevel, locationInLevelBounds
 from Convert import convertJsonLevel
 from Create import addPlayersToBoard, addEnemiesToBoard
 from Types import *
+from Player import getVisibleTiles
 import GameManager
 
 log = logInFile("localSnarl.py")
@@ -57,7 +59,8 @@ def main():
                         nargs='?',
                         help="Enter the number of the level to start the game from",
                         const=startLevel, type=int)
-    parser.add_argument("--observe", help="Observe the game", action="store_true")
+    parser.add_argument("--observe", help="Observe the game",
+                        action="store_true")
 
     # this is called after you define your optional args
     args = parser.parse_args()
@@ -100,6 +103,7 @@ def main():
         rawJsonGameLevels = jsonLevels[(startLevel - 1):]
         jsonGameLevels = [json.loads(rawJsonLevel) for rawJsonLevel in
                           rawJsonGameLevels]
+        log("got+converted {} levels".format(len(jsonGameLevels)))
 
         # this has all the levels needed with the starting level as the first
         # element in the list
@@ -119,7 +123,7 @@ def main():
         while i < numPlayers:  # Populate players in level
             playerName = playerNames[i]
             randBoardNum, randBoard = getRandomRoomInLevel(levels[0])
-            log("Rand board dimensions", str(randBoard.dimensions))
+            log("Rand board", str(randBoardNum), str(randBoard.dimensions))
             loc = genXRandCoords(1, forbidden, randBoard.origin,
                                  randBoard.dimensions).pop()
             if loc not in playerLocs:
@@ -172,12 +176,8 @@ def main():
         # format
         background.fill(Globals.BG_COLOR)
 
-        currLevel: Level = game.levels[game.currLevel]
-        currBoard: Board = currLevel.boards[currLevel.currBoard]
-        keyObj = {"type":     "key",
-                  "location": game.levels[game.currLevel].keyLocation}
-        exitObj = {"type":     "exit",
-                   "location": game.levels[game.currLevel].exitLocation}
+        currLevel0: Level = game.levels[game.currLevel]
+        currBoard0: Board = currLevel0.boards[currLevel0.currBoard]
 
         def getEnemies(enemiesDict: list):
             acc = []
@@ -189,34 +189,75 @@ def main():
         allEnemies = getEnemies(enemies)
 
         log("All enemies", str(allEnemies))
-        log("Level has this many boards", str(len(currLevel.boards)))
+        log("Level has this many boards", str(len(currLevel0.boards)))
 
         if isObserving:
             log("OBSERVER VIEW")
-            allTiles = getAllTiles(currLevel)
-            view = ObserverView("observer", allTiles, keyObj, exitObj,
+            allTiles = getAllTiles(currLevel0)
+            view = ObserverView("observer", allTiles, [currLevel0.keyLocation],
+                                [currLevel0.exitLocation],
                                 players, allEnemies)
             renderObserverView(background, view)
         else:
-            log("PLYAER VIEW")
-            playerLoc = getPlayer(currLevel, playerNames[0])
-            view = PlayerView(playerNames[0], currBoard.tiles, playerLoc,
-                              keyObj, exitObj,
+            log("PLAYER VIEW")
+            player: Player = getPlayer(currLevel0, playerNames[0])
+            view = PlayerView(playerNames[0],
+                              getVisibleTiles(player, currLevel0),
+                              player.location,
+                              [currLevel0.keyLocation],
+                              [currLevel0.exitLocation],
                               players, allEnemies)
             renderPlayerView(background, view)
+
+        # Block events we don't care about and allow ones we do
+        # (speeds processing)
+        pygame.event.set_blocked(None)
+        pygame.event.set_allowed([QUIT, MOUSEBUTTONDOWN, MOUSEBUTTONUP])
 
         while True:
 
             # pygame.time.wait(250)
             clock.tick(30)  # cap at 30fps
 
-            currPlayer = 0
+            currLevel: Level = game.levels[game.currLevel]
 
-            # TODO user events
+            # TODO check if level over (all players ejected/exited)
+
+            # TODO recycle playerTurns when max reached
+
+            playerName = game.players[currLevel.playerTurn]
+
+            # player not in level (ejected or exited)
+            if not getPlayer(currLevel, playerName):
+                currLevel.playerTurn = currLevel.playerTurn + 1
+                continue
+
             # handle user events
             for event in pygame.event.get():
                 if event.type == QUIT:
                     sys.exit(0)
+                if event.type == MOUSEBUTTONDOWN and not isObserving:
+                    newLoc = translateScreenLocation(event.pos)
+                    if not locationInLevelBounds(currLevel, newLoc):
+                        continue
+                    log("Got click at", str(event.pos), "--->", str(newLoc))
+                    GameManager.move(playerName, newLoc, game)
+                    player: Player = getPlayer(currLevel, playerName)
+                    if player:  # player still in level
+                        board1: Board = currLevel.boards[
+                            whichBoardInLevel(currLevel,
+                                              player.location)]
+                        newView = PlayerView(playerName,
+                                             getVisibleTiles(player, currLevel),
+                                             player.location,
+                                             [currLevel.keyLocation],
+                                             [currLevel.exitLocation],
+                                             [board1.players[pname] for pname in
+                                              board1.players.keys()],
+                                             [board1.enemies[ename] for ename in
+                                              board1.enemies.keys()])
+
+                        renderPlayerView(background, newView)
 
             """
             gameCollection ---> {gameName: dungeon}
@@ -227,10 +268,12 @@ def main():
             """
 
             # map of keys pressed
-            # keys = pygame.key.get_pressed()
 
+            # keys = pygame.key.get_pressed()
             screen.blit(background, (0, 0))  # render pixels to
             pygame.display.update()  # update
+
+
 
     except FileNotFoundError:
         print("Couldn't find that level file. Try again")

@@ -1,5 +1,5 @@
 from Types import *
-from Util import locationInLevelBounds, getPlayer
+from Util import locationInLevelBounds, getPlayer, whichBoardInLevel, log
 from Convert import convertJsonPlayer, convertJsonEnemy
 import GameManager
 from more_itertools import first_true
@@ -89,7 +89,7 @@ def whereAmI(view: PlayerView):
     return view.position
 
 
-def getFieldOfView(playerName: Player, level: Level):
+def getFieldOfView(playerName: str, level: Level):
     player: Player = getPlayer(level, playerName)
     pLocRow, pLocCol = player.location
     origin = (pLocRow - 2, pLocCol - 2)
@@ -99,4 +99,23 @@ def getFieldOfView(playerName: Player, level: Level):
             relLoc = (origin[0] + r, origin[1] + c)
             if locationInLevelBounds(level, relLoc):
                 fieldOfView.append(relLoc)
+    return fieldOfView
+
+
+def getVisibleTiles(player: Player, level: Level):
+    pLocRow, pLocCol = player.location
+    origin = (pLocRow - 2, pLocCol - 2)
+    fieldOfView = {}
+    for r in range(5):
+        fovRow = {}
+        relRow = origin[0] + r
+        for c in range(5):
+            relCol = origin[1] + c
+            relLoc = (relRow, relCol)
+            if locationInLevelBounds(level, relLoc):
+                boardNum = whichBoardInLevel(level, relLoc)
+                tile = level.boards[boardNum].tiles[relRow][relCol]
+                fovRow[relCol] = tile
+        fieldOfView.update({relRow: fovRow})
+    log("Got visible tiles", str(fieldOfView))
     return fieldOfView

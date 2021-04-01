@@ -2,7 +2,7 @@ from math import floor
 from pygame import font
 
 SCREEN_WIDTH = 1200  # in pixels
-SCREEN_HEIGHT = 600
+SCREEN_HEIGHT = 800
 SCREEN_DIMENSIONS = (SCREEN_WIDTH, SCREEN_HEIGHT)
 BG_COLOR = (255, 255, 255)  # white...boring
 

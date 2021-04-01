@@ -27,7 +27,7 @@ class Dungeon:
 class Level:
     def __init__(self, keyLocation: tuple, exitLocation: tuple, boards: list,
                  exitUnlocked: bool,
-                 playerTurn=None):
+                 playerTurn=0):
         self.keyLocation = keyLocation
         self.exitLocation = exitLocation
         self.boards = boards
@@ -87,25 +87,25 @@ class Item:
 
 
 class PlayerView:
-    def __init__(self, name: str, tiles: dict, position: tuple, keyObj=None,
-                 exitObj=None,
+    def __init__(self, name: str, tiles: dict, position: tuple, keys=[],
+                 exits=[],
                  players=[], enemies=[]):
         self.name = name
         self.tiles = tiles  # 5x5 of times with absolute locations
         self.position = position
-        self.keyObj = keyObj
-        self.exitObj = exitObj
+        self.keys = keys
+        self.exits = exits
         self.players = players
         self.enemies = enemies
 
 
 class ObserverView:
-    def __init__(self, name: str, tiles: dict, keyObj=None, exitObj=None,
+    def __init__(self, name: str, tiles: dict, keys=[], exits=[],
                  players=[], enemies=[], history=[]):
         self.name = name
         self.tiles = tiles  # all tiles with absolute locations
-        self.keyObj = keyObj
-        self.exitObj = exitObj
+        self.keys = keys
+        self.exits = exits
         self.players = players
         self.enemies = enemies
         self.history = history

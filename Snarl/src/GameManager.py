@@ -3,7 +3,10 @@ from Create import createDungeon, addPlayersToBoard, removePlayersFromBoard
 from Move import moveEntity
 from Rulechecker import playerPossibleCardinalMoves, \
     destHasEnemy, destHasKey, destHasExit, playerCanMoveTo
-from Util import whichBoardInLevel, log
+from Util import whichBoardInLevel, logInFile, getPlayer
+
+
+log = logInFile("GameManager.py")
 
 
 def move(playerName: str, destination: tuple, game: Dungeon):
@@ -15,13 +18,14 @@ def move(playerName: str, destination: tuple, game: Dungeon):
     :param destination: tuple
     :param game: Dungeon
     """
+    log("Moving", playerName, "to", str(destination))
     currLevel: Level = game.levels[game.currLevel]
-    currBoardNum = whichBoardInLevel(currLevel, destination)
-    currBoard: Board = currLevel.boards[currBoardNum]
-    player = currBoard.players[playerName]
+    player = getPlayer(currLevel, playerName)
+    currBoardNum = whichBoardInLevel(currLevel, player.location)
+    newBoardNum = whichBoardInLevel(currLevel, destination)
     numMoves = 2
     if playerCanMoveTo(destination, player, currLevel, numMoves):
-        updatedLevel = moveEntity(currLevel, playerName, currBoardNum,
+        updatedLevel = moveEntity(currLevel, playerName, currBoardNum, newBoardNum,
                                   destination, isPlayer=True)
         game.levels[game.currLevel] = updatedLevel
         updatedGame = interact(playerName, destination, game)
