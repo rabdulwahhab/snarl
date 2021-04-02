@@ -186,3 +186,20 @@ def renderObserverView(background: pygame.Surface, view: ObserverView):
     renderEnemiesViews(background, view.enemies)
     if len(view.history) > 0:
         log(str(view.history[-1]))
+
+
+def renderStatusBar(statusBar: pygame.Surface, game: Dungeon):
+    log = logInFile("Render.py", "renderStatusBar")
+    playerTurn = game.levels[game.currLevel].playerTurn
+    levelNum = game.currLevel + 1
+    statusBar.fill(Colors.WALL)
+    levelText = Globals.FONT.render("Level: {}".format(levelNum), True,
+                                    Colors.WHITE)
+    playersText = Globals.FONT.render("Players left: TODO", True, Colors.WHITE)
+    turnText = Globals.FONT.render("{}'s turn".format(game.players[playerTurn]),
+                                   True, Colors.WHITE)
+
+    statusBar.blit(levelText, (Globals.TILE_WIDTH, Globals.TILE_HEIGHT / 2))
+    statusBar.blit(playersText,
+                   (Globals.TILE_WIDTH * 6, Globals.TILE_HEIGHT / 2))
+    statusBar.blit(turnText, (Globals.TILE_WIDTH * 12, Globals.TILE_HEIGHT / 2))

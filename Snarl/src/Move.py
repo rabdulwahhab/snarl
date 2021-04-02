@@ -37,5 +37,4 @@ def moveEntity(level: Level, name: str, currBoard: int, newBoardNum: int,
 
             level.currBoard = newBoardNum
 
-    # level.playerTurn = level.playerTurn + 1
     return level

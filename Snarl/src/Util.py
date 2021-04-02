@@ -130,7 +130,7 @@ def getScreenLocation(location):
 
 
 def translateScreenLocation(absLoc: tuple):
-    return math.floor(absLoc[1] / Globals.TILE_HEIGHT), math.floor(
+    return math.floor((absLoc[1] - Globals.STATUS_BAR_HEIGHT) / Globals.TILE_HEIGHT), math.floor(
         absLoc[0] / Globals.TILE_WIDTH)
 
 

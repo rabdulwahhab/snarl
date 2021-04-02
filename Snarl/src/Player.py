@@ -117,5 +117,4 @@ def getVisibleTiles(player: Player, level: Level):
                 tile = level.boards[boardNum].tiles[relRow][relCol]
                 fovRow[relCol] = tile
         fieldOfView.update({relRow: fovRow})
-    log("Got visible tiles", str(fieldOfView))
     return fieldOfView

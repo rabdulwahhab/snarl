@@ -29,7 +29,7 @@
     "to": [10, 12],
     "waypoints": [[2, 12]]
   }],
-  "objects": [ { "type": "key", "position": [13, 13] },
+  "objects": [ { "type": "key", "position": [13, 12] },
                { "type": "exit", "position": [14, 14] } ]
 }
 

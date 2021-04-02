@@ -2,13 +2,14 @@ import sys
 from functools import reduce
 
 import Globals
+import Colors
 import json
 import pygame
 from pygame.locals import *
 import argparse
 import math
 import random
-from Render import renderPlayerView, renderObserverView
+from Render import renderPlayerView, renderObserverView, renderStatusBar
 from Util import logInFile, genXRandCoords, getPlayer, getAllTiles, \
     translateScreenLocation, whichBoardInLevel, locationInLevelBounds
 from Convert import convertJsonLevel
@@ -173,11 +174,13 @@ def main():
         # Fill background. Draw onto this
         background = pygame.Surface(screen.get_size())
         background = background.convert()  # converts Surface to single-pixel
+        statusBar = pygame.Surface((screen.get_width(), Globals.STATUS_BAR_HEIGHT))
+        statusBar = statusBar.convert()  # converts Surface to single-pixel
         # format
         background.fill(Globals.BG_COLOR)
+        statusBar.fill(Globals.BG_COLOR)
 
         currLevel0: Level = game.levels[game.currLevel]
-        currBoard0: Board = currLevel0.boards[currLevel0.currBoard]
 
         def getEnemies(enemiesDict: list):
             acc = []
@@ -191,6 +194,15 @@ def main():
         log("All enemies", str(allEnemies))
         log("Level has this many boards", str(len(currLevel0.boards)))
 
+        def locationInTiles(location: tuple, tiles: dict):
+            lrow, lcol = location
+            for row in tiles.keys():
+                if lrow == row:
+                    for col in tiles[row].keys():
+                        if lcol == col:
+                            return True
+            return False
+
         if isObserving:
             log("OBSERVER VIEW")
             allTiles = getAllTiles(currLevel0)
@@ -201,13 +213,18 @@ def main():
         else:
             log("PLAYER VIEW")
             player: Player = getPlayer(currLevel0, playerNames[0])
+            visibleTiles = getVisibleTiles(player, currLevel0)
+            nearbyEnemies = [enemy for enemy in allEnemies if
+                             locationInTiles(enemy.location, visibleTiles)]
+            nearbyPlayers = [player for player in players if
+                             locationInTiles(player.location, visibleTiles)]
             view = PlayerView(playerNames[0],
-                              getVisibleTiles(player, currLevel0),
+                              visibleTiles,
                               player.location,
                               [currLevel0.keyLocation],
                               [currLevel0.exitLocation],
-                              players, allEnemies)
-            renderPlayerView(background, view)
+                              nearbyPlayers, nearbyEnemies)
+            # renderPlayerView(background, view)
 
         # Block events we don't care about and allow ones we do
         # (speeds processing)
@@ -223,14 +240,40 @@ def main():
 
             # TODO check if level over (all players ejected/exited)
 
-            # TODO recycle playerTurns when max reached
-
             playerName = game.players[currLevel.playerTurn]
 
+            log("Player turn", str(currLevel.playerTurn))
+
+            player: Player = getPlayer(currLevel, playerName)
             # player not in level (ejected or exited)
-            if not getPlayer(currLevel, playerName):
+            if not player:
                 currLevel.playerTurn = currLevel.playerTurn + 1
                 continue
+
+            # Render player view
+            board1: Board = currLevel.boards[
+                whichBoardInLevel(currLevel,
+                                  player.location)]
+            visibleTiles = getVisibleTiles(player, currLevel)
+            visiblePlayers = [board1.players[pname] for pname in
+                              board1.players.keys() if
+                              locationInTiles(
+                                  board1.players[pname].location,
+                                  visibleTiles)]
+            visibleEnemies = [board1.enemies[ename] for ename in
+                              board1.enemies.keys() if
+                              locationInTiles(
+                                  board1.enemies[ename].location,
+                                  visibleTiles)]
+            newView = PlayerView(playerName,
+                                 visibleTiles,
+                                 player.location,
+                                 [currLevel.keyLocation],
+                                 [currLevel.exitLocation],
+                                 visiblePlayers,
+                                 visibleEnemies)
+            renderPlayerView(background, newView)
+            renderStatusBar(statusBar, game)
 
             # handle user events
             for event in pygame.event.get():
@@ -242,22 +285,6 @@ def main():
                         continue
                     log("Got click at", str(event.pos), "--->", str(newLoc))
                     GameManager.move(playerName, newLoc, game)
-                    player: Player = getPlayer(currLevel, playerName)
-                    if player:  # player still in level
-                        board1: Board = currLevel.boards[
-                            whichBoardInLevel(currLevel,
-                                              player.location)]
-                        newView = PlayerView(playerName,
-                                             getVisibleTiles(player, currLevel),
-                                             player.location,
-                                             [currLevel.keyLocation],
-                                             [currLevel.exitLocation],
-                                             [board1.players[pname] for pname in
-                                              board1.players.keys()],
-                                             [board1.enemies[ename] for ename in
-                                              board1.enemies.keys()])
-
-                        renderPlayerView(background, newView)
 
             """
             gameCollection ---> {gameName: dungeon}
@@ -270,9 +297,9 @@ def main():
             # map of keys pressed
 
             # keys = pygame.key.get_pressed()
-            screen.blit(background, (0, 0))  # render pixels to
+            screen.blit(background, (0, Globals.STATUS_BAR_HEIGHT))  # render pixels to
+            screen.blit(statusBar, (0, 0))
             pygame.display.update()  # update
-
 
 
     except FileNotFoundError:

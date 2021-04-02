@@ -5,7 +5,6 @@ from Rulechecker import playerPossibleCardinalMoves, \
     destHasEnemy, destHasKey, destHasExit, playerCanMoveTo
 from Util import whichBoardInLevel, logInFile, getPlayer
 
-
 log = logInFile("GameManager.py")
 
 
@@ -25,8 +24,13 @@ def move(playerName: str, destination: tuple, game: Dungeon):
     newBoardNum = whichBoardInLevel(currLevel, destination)
     numMoves = 2
     if playerCanMoveTo(destination, player, currLevel, numMoves):
-        updatedLevel = moveEntity(currLevel, playerName, currBoardNum, newBoardNum,
+        updatedLevel = moveEntity(currLevel, playerName, currBoardNum,
+                                  newBoardNum,
                                   destination, isPlayer=True)
+        if updatedLevel.playerTurn == len(game.players) - 1:
+            updatedLevel.playerTurn = 0
+        else:
+            updatedLevel.playerTurn = updatedLevel.playerTurn + 1
         game.levels[game.currLevel] = updatedLevel
         updatedGame = interact(playerName, destination, game)
         return updatedGame
