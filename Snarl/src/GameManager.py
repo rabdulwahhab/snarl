@@ -3,7 +3,7 @@ from Create import createDungeon, addPlayersToBoard, removePlayersFromBoard
 from Move import moveEntity
 from Rulechecker import playerPossibleCardinalMoves, \
     destHasEnemy, destHasKey, destHasExit, playerCanMoveTo
-from Util import whichBoardInLevel, logInFile, getPlayer
+from Util import whichBoardInLevel, logInFile, getPlayer, genXRandCoords, getRandomRoomInLevel, getPlayersInLevel
 
 log = logInFile("GameManager.py")
 
@@ -17,7 +17,6 @@ def move(playerName: str, destination: tuple, game: Dungeon):
     :param destination: tuple
     :param game: Dungeon
     """
-    log("Moving", playerName, "to", str(destination))
     currLevel: Level = game.levels[game.currLevel]
     player = getPlayer(currLevel, playerName)
     currBoardNum = whichBoardInLevel(currLevel, player.location)
@@ -111,40 +110,37 @@ def removePlayer(playerName: str, currBoardNum: int, game: Dungeon):
     return game
 
 
-# TODO: look thru to make sure it still works as expected after advancePlayer adjustment
-# FIXME: need to refactor for placing all players in the next level at sane locations
 def advanceLevel(game: Dungeon):
     """
     Advances the game (Dungeon) to the next level (increments game's current
-    level, moves players to first room of next level) and returns the
+    level, moves players to a random room of next level) and returns the
     updated game. If there are no levels remaining in the game to advance
     to, ends the game.
     :param game: Dungeon
     """
+    log("Advancing level")
     nextLevelNum = game.currLevel + 1
     if nextLevelNum == len(game.levels):
         return endGame(game)
 
     game.currLevel = nextLevelNum
-    currLevel: Level = game.levels[game.currLevel]
-    # TODO is currBoard needed here???
-    currBoard: Board = currLevel.boards[currLevel.currBoard]
-
-    allPlayers = currBoard.players.copy()
-    currBoard.players = {}
     nextLevel: Level = game.levels[nextLevelNum]
-    nextBoard: Board = nextLevel.boards[nextLevel.currBoard]
-    # TODO use addPlayerToBoard
-    nextBoard.players = allPlayers
-    # FIXME place players in different locations
-    newLocations = []
-    while len(newLocations) < len(allPlayers):
-        firstDoorLoc = nextBoard.doorLocations[0]
-        newLocations += playerPossibleCardinalMoves(firstDoorLoc, 1, nextLevel)
-
-    for playerName in allPlayers.keys():
-        player: Player = nextBoard.players[playerName]
-        player.location = newLocations.pop()
+    numPlayers = len(game.players)
+    forbidden = [nextLevel.keyLocation, nextLevel.exitLocation]
+    playerLocs = []
+    i = 0
+    while i < numPlayers:  # Populate players in level
+        playerName = game.players[i]
+        randBoardNum, randBoard = getRandomRoomInLevel(nextLevel)
+        log("Rand board", str(randBoardNum), str(randBoard.dimensions))
+        loc = genXRandCoords(1, forbidden, randBoard.origin,
+                             randBoard.dimensions).pop()
+        if loc not in playerLocs:
+            player = Player(playerName, loc)
+            nextLevel.boards[randBoardNum] = addPlayersToBoard(randBoard, {
+                playerName: player})
+            playerLocs.append(loc)
+            i += 1
 
     return game
 
@@ -157,15 +153,19 @@ def interactWithExit(playerName: str, location: tuple, game: Dungeon):
     :param location: tuple
     :param game: Dungeon
     """
+    log("Interacting with exit")
     for level in game.levels:
         if location == level.exitLocation:
             if level.exitUnlocked:
                 currBoardNum = whichBoardInLevel(level, location)
-                currBoard: Board = level.boards[currBoardNum]
-                if len(currBoard.players.values()) == 1:  # last player
+                playersLeft = getPlayersInLevel(level)
+                log("Players left --->", str(playersLeft))
+                if len(playersLeft) == 1:  # last player
                     # FIXME return advanceLevel(game)
-                    return removePlayer(playerName, currBoardNum, game)
+                    log("Last player")
+                    return advanceLevel(game)
                 else:
+                    log("Removing player")
                     return removePlayer(playerName, currBoardNum, game)
     return game
 

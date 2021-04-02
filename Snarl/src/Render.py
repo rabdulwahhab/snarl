@@ -107,8 +107,8 @@ def renderItems(background: pygame.Surface, items):
             renderItem(background, item)
 
 
-def renderTiles(background: pygame.Surface, tiles: dict, exitLoc: tuple,
-                keyLoc: tuple):
+def renderTiles(background: pygame.Surface, tiles: dict, keyLoc: tuple,
+                exitLoc: tuple):
     # npyarr = numpy.array(list(tiles.items())) # convert dict -> numpy array
     # gen = (row for row in npyarr)
     # for rowColPair in gen:
@@ -195,11 +195,12 @@ def renderStatusBar(statusBar: pygame.Surface, game: Dungeon):
     statusBar.fill(Colors.WALL)
     levelText = Globals.FONT.render("Level: {}".format(levelNum), True,
                                     Colors.WHITE)
-    playersText = Globals.FONT.render("Players left: TODO", True, Colors.WHITE)
     turnText = Globals.FONT.render("{}'s turn".format(game.players[playerTurn]),
                                    True, Colors.WHITE)
 
     statusBar.blit(levelText, (Globals.TILE_WIDTH, Globals.TILE_HEIGHT / 2))
-    statusBar.blit(playersText,
-                   (Globals.TILE_WIDTH * 6, Globals.TILE_HEIGHT / 2))
-    statusBar.blit(turnText, (Globals.TILE_WIDTH * 12, Globals.TILE_HEIGHT / 2))
+    statusBar.blit(turnText, (Globals.TILE_WIDTH * 6, Globals.TILE_HEIGHT / 2))
+    if game.levels[game.currLevel].exitUnlocked:
+        keyText = Globals.FONT.render("Exit unlocked!", True, Colors.WHITE)
+        statusBar.blit(keyText,
+                       (Globals.TILE_WIDTH * 12, Globals.TILE_HEIGHT / 2))

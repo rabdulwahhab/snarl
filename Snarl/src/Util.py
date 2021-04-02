@@ -3,6 +3,7 @@ from Types import *
 from random import randint
 from functools import partial, reduce
 import math
+import random
 from more_itertools import first_true
 
 
@@ -162,6 +163,22 @@ def isTileOnBoard(location: tuple, board: Board):
         if location[1] in board.tiles[location[0]].keys():
             return True
     return False
+
+
+def getRandomRoomInLevel(level: Level):
+    randBoardNum = random.randint(0, len(level.boards) - 1)
+    randBoard: Board = level.boards[randBoardNum]
+    if randBoard.boardType == BoardEnum.HALLWAY:
+        return getRandomRoomInLevel(level)
+    else:
+        return randBoardNum, randBoard
+
+
+def getPlayersInLevel(level: Level):
+    acc = []
+    for board in level.boards:
+        acc += list(board.players.keys())
+    return acc
 
 
 def isDoorLocation(location: tuple, game: Dungeon):

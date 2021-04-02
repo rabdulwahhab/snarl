@@ -1,17 +1,15 @@
 import sys
-from functools import reduce
 
 import Globals
-import Colors
 import json
 import pygame
 from pygame.locals import *
 import argparse
 import math
-import random
 from Render import renderPlayerView, renderObserverView, renderStatusBar
 from Util import logInFile, genXRandCoords, getPlayer, getAllTiles, \
-    translateScreenLocation, whichBoardInLevel, locationInLevelBounds
+    translateScreenLocation, whichBoardInLevel, locationInLevelBounds, \
+    getRandomRoomInLevel, getPlayersInLevel
 from Convert import convertJsonLevel
 from Create import addPlayersToBoard, addEnemiesToBoard
 from Types import *
@@ -28,15 +26,6 @@ def populateEnemies(levelNum: int, levelEnemies: dict, game: Dungeon):
         game.levels[levelNum].boards[enemyBoardNum] = addEnemiesToBoard(
             board, {
                 enemyName: levelEnemies[enemyName][1]})
-
-
-def getRandomRoomInLevel(level: Level):
-    randBoardNum = random.randint(0, len(level.boards) - 1)
-    randBoard: Board = level.boards[randBoardNum]
-    if randBoard.boardType == BoardEnum.HALLWAY:
-        return getRandomRoomInLevel(level)
-    else:
-        return randBoardNum, randBoard
 
 
 def main():
@@ -168,13 +157,17 @@ def main():
         # Initialize screen
         pygame.init()
         clock = pygame.time.Clock()
-        screen = pygame.display.set_mode(Globals.SCREEN_DIMENSIONS)
+        screen = pygame.display.set_mode(Globals.SCREEN_DIMENSIONS,
+                                         flags=pygame.RESIZABLE)
         pygame.display.set_caption("Local Snarl Demo")
 
         # Fill background. Draw onto this
-        background = pygame.Surface(screen.get_size())
+        gameDisplaySize = (
+            Globals.GAME_DISPLAY_WIDTH, Globals.GAME_DISPLAY_HEIGHT)
+        background = pygame.Surface(gameDisplaySize)
+        statusBarSize = (Globals.STATUS_BAR_WIDTH, Globals.STATUS_BAR_HEIGHT)
+        statusBar = pygame.Surface(statusBarSize)
         background = background.convert()  # converts Surface to single-pixel
-        statusBar = pygame.Surface((screen.get_width(), Globals.STATUS_BAR_HEIGHT))
         statusBar = statusBar.convert()  # converts Surface to single-pixel
         # format
         background.fill(Globals.BG_COLOR)
@@ -236,9 +229,16 @@ def main():
             # pygame.time.wait(250)
             clock.tick(30)  # cap at 30fps
 
+            if game.isGameOver:  # TODO something special
+                log("The game is over!")
+                sys.exit(0)
+
             currLevel: Level = game.levels[game.currLevel]
 
-            # TODO check if level over (all players ejected/exited)
+            # if currLevel.exitUnlocked and getPlayersInLevel(currLevel) == 0:
+            #     GameManager.advanceLevel(game)
+            #     log("Advancing level")
+            #     continue
 
             playerName = game.players[currLevel.playerTurn]
 
@@ -257,7 +257,7 @@ def main():
             visibleTiles = getVisibleTiles(player, currLevel)
             visiblePlayers = [board1.players[pname] for pname in
                               board1.players.keys() if
-                              locationInTiles(
+                              locationInTiles( # FIXME bug when player next to you
                                   board1.players[pname].location,
                                   visibleTiles)]
             visibleEnemies = [board1.enemies[ename] for ename in
@@ -297,7 +297,8 @@ def main():
             # map of keys pressed
 
             # keys = pygame.key.get_pressed()
-            screen.blit(background, (0, Globals.STATUS_BAR_HEIGHT))  # render pixels to
+            screen.blit(background,
+                        (0, Globals.STATUS_BAR_HEIGHT))  # render pixels to
             screen.blit(statusBar, (0, 0))
             pygame.display.update()  # update
 
