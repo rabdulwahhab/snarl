@@ -1,29 +1,30 @@
 from Types import *
 from Create import createDungeon, addPlayersToBoard, removePlayersFromBoard
 from Move import moveEntity
-from Rulechecker import playerPossibleCardinalMoves, \
-    destHasEnemy, destHasKey, destHasExit, playerCanMoveTo
-from Util import whichBoardInLevel, logInFile, getPlayer, genXRandCoords, getRandomRoomInLevel, getPlayersInLevel
+from Rulechecker import destHasEnemy, destHasKey, destHasExit, playerCanMoveTo
+from Util import whichBoardInLevel, logInFile, getPlayer, genXRandCoords, \
+    getRandomRoomInLevel, getPlayersInLevel, getEnemy
 
 log = logInFile("GameManager.py")
 
 
-def move(playerName: str, destination: tuple, game: Dungeon):
+def move(entityName: str, destination: tuple, game: Dungeon, isPlayer=True):
     """
     Updates the game to reflect the movement of a player if they
     can move to the given destination in the game. Returns an
     unmodified game if the player cannot move based on game rules.
-    :param playerName: str
+    :param entityName: str
     :param destination: tuple
     :param game: Dungeon
     """
     currLevel: Level = game.levels[game.currLevel]
-    player = getPlayer(currLevel, playerName)
-    currBoardNum = whichBoardInLevel(currLevel, player.location)
+    entity = getPlayer(currLevel, entityName) if isPlayer else getEnemy(
+        currLevel, entityName)
+    currBoardNum = whichBoardInLevel(currLevel, entity.location)
     newBoardNum = whichBoardInLevel(currLevel, destination)
     numMoves = 2
-    if playerCanMoveTo(destination, player, currLevel, numMoves):
-        updatedLevel = moveEntity(currLevel, playerName, currBoardNum,
+    if isPlayer and playerCanMoveTo(destination, entity, currLevel, numMoves):
+        updatedLevel = moveEntity(currLevel, entityName, currBoardNum,
                                   newBoardNum,
                                   destination, isPlayer=True)
         if updatedLevel.playerTurn == len(game.players) - 1:
@@ -31,7 +32,13 @@ def move(playerName: str, destination: tuple, game: Dungeon):
         else:
             updatedLevel.playerTurn = updatedLevel.playerTurn + 1
         game.levels[game.currLevel] = updatedLevel
-        updatedGame = interact(playerName, destination, game)
+        updatedGame = interact(entityName, destination, game)
+        return updatedGame
+    elif not isPlayer:
+        updatedLevel = moveEntity(currLevel, entityName, currBoardNum,
+                                  newBoardNum, destination, isPlayer=False)
+        game.levels[game.currLevel] = updatedLevel
+        updatedGame = enemyInteract(game)
         return updatedGame
     else:
         return game
@@ -60,6 +67,20 @@ def interact(playerName: str, location: tuple, game: Dungeon):
     #     return game
     else:
         return game
+
+
+# TODO
+def enemyInteract(game: Dungeon):
+    return game
+
+# TODO
+def interactWithPlayer():
+    return None
+
+# TODO
+def interactWithWall():
+    return None
+# TODO: in rulechecker add destHasWall
 
 
 def interactWithEnemy(playerName: str, location: tuple, game: Dungeon):

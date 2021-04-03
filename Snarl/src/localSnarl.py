@@ -9,12 +9,13 @@ import math
 from Render import renderPlayerView, renderObserverView, renderStatusBar
 from Util import logInFile, genXRandCoords, getPlayer, getAllTiles, \
     translateScreenLocation, whichBoardInLevel, locationInLevelBounds, \
-    getRandomRoomInLevel, getPlayersInLevel
+    getRandomRoomInLevel, getEnemiesInLevel
 from Convert import convertJsonLevel
 from Create import addPlayersToBoard, addEnemiesToBoard
 from Types import *
 from Player import getVisibleTiles
 import GameManager
+import Enemy as EnemyMove
 
 log = logInFile("localSnarl.py")
 
@@ -131,13 +132,19 @@ def main():
         for i in range(len(game.levels)):
             numZombies = math.floor((i + 1) / 2) + 1
             numGhosts = math.floor(((i + 1) - 1) / 2)
+            log("NUM ZOMBIES", str(numZombies), "NUM GHOSTS", str(numGhosts))
             levelEnemies = {}
             for zombie in range(numZombies):
+                log("OUR i is ", str(zombie))
                 randBoardNum, randBoard = getRandomRoomInLevel(levels[0])
+                log("randomboardNum = ", str(randBoardNum))
                 name = "zombie" + str((zombie + 1))
+                log("BUILDIGN NEW ZOMBIEEE")
+                log("NAME: ", name)
                 loc = genXRandCoords(1, playerLocs + forbidden + enemyLocs,
                                      randBoard.origin,
                                      randBoard.dimensions).pop()
+                log("LOC", str(loc))
                 enemyLocs.append(loc)
                 newZombie = Enemy(name, loc)
                 levelEnemies[name] = (randBoardNum, newZombie)
@@ -235,10 +242,12 @@ def main():
 
             currLevel: Level = game.levels[game.currLevel]
 
-            # if currLevel.exitUnlocked and getPlayersInLevel(currLevel) == 0:
-            #     GameManager.advanceLevel(game)
-            #     log("Advancing level")
-            #     continue
+            # Move all enemies at beginning of rounds (all players moved)
+            if currLevel.playerTurn == 0:
+                for enemy in getEnemiesInLevel(currLevel):
+                    nextMove = EnemyMove.enemyNextMove(enemy, game)
+                    GameManager.move(enemy.name, nextMove, game, isPlayer=False)
+
 
             playerName = game.players[currLevel.playerTurn]
 

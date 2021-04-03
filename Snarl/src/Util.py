@@ -84,6 +84,13 @@ def genXRandCoords(numRandCoord, rejectCoords, origin, dimensions):
     return newCoordinates
 
 
+def distanceFormula(p1: tuple, p2: tuple):
+    """
+    dist = sqrt((p2x - p1x)**2 + (p2y - p1y)**2)
+    """
+    return math.sqrt((p2[0] - p1[0]) ** 2 + (p2[1] - p1[1]) ** 2)
+
+
 def getLocationsAround(location: tuple):
     x, y = location
     above = (x, y + 1)
@@ -131,7 +138,8 @@ def getScreenLocation(location):
 
 
 def translateScreenLocation(absLoc: tuple):
-    return math.floor((absLoc[1] - Globals.STATUS_BAR_HEIGHT) / Globals.TILE_HEIGHT), math.floor(
+    return math.floor((absLoc[
+                           1] - Globals.STATUS_BAR_HEIGHT) / Globals.TILE_HEIGHT), math.floor(
         absLoc[0] / Globals.TILE_WIDTH)
 
 
@@ -181,6 +189,13 @@ def getPlayersInLevel(level: Level):
     return acc
 
 
+def getEnemiesInLevel(level: Level):
+    acc = []
+    for board in level.boards:
+        acc += list(board.enemies.values())
+    return acc
+
+
 def isDoorLocation(location: tuple, game: Dungeon):
     for level in game.levels:
         for board in level.boards:
@@ -218,6 +233,5 @@ def getPlayer(level: Level, playerName: str):
 def getEnemy(level: Level, enemyName: str):
     for board in level.boards:
         if enemyName in board.enemies.keys():
-            return board.players[enemyName]
+            return board.enemies[enemyName]
     return None
-
