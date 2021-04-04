@@ -62,7 +62,7 @@ def interact(playerName: str, location: tuple, game: Dungeon):
     if destHasEnemy(location, currBoard):
         return interactWithEnemy(playerName, location, game)
     elif destHasKey(location, currLevel):
-        return interactWithKey(location, game)
+        return interactWithKey(playerName, location, game)
     elif destHasExit(location, currLevel):
         return interactWithExit(playerName, location, game)
     # elif destHasItem(location, currBoard):
@@ -91,6 +91,7 @@ def interactWithPlayer(dest: tuple, game: Dungeon):
     for player in currBoard.players.values():
         if player.location == dest:
             updatedGame = removePlayer(player.name, currBoardNum, game)
+            print('Player {} was expelled'.format(player.name))
             if len(getAllPlayers(currLevel)) == 0:
                 updatedGame = endGame(updatedGame)
             return updatedGame
@@ -133,8 +134,8 @@ def interactWithEnemy(playerName: str, location: tuple, game: Dungeon):
     for enemyName in currBoard.enemies.keys():
         enemy: Enemy = currBoard.enemies[enemyName]
         if location == enemy.location:  # fight!
-
             updatedGame = removePlayer(playerName, currBoardNum, game)
+            print('Player {} was expelled'.format(playerName))
             # if last player in level, game over
             if len(getAllPlayers(currLevel)) == 0:
                 updatedGame = endGame(updatedGame)
@@ -142,7 +143,7 @@ def interactWithEnemy(playerName: str, location: tuple, game: Dungeon):
     return game
 
 
-def interactWithKey(location: tuple, game: Dungeon):
+def interactWithKey(playerName: str, location: tuple, game: Dungeon):
     """
     Computes the resulting game state of a player acquiring a key in the
     level.
@@ -152,6 +153,7 @@ def interactWithKey(location: tuple, game: Dungeon):
     level = game.levels[game.currLevel]
     if level.keyLocation == location:
         level.exitUnlocked = True
+        print('Player {} found the key'.format(playerName))
     return game
 
 
@@ -179,7 +181,6 @@ def advanceLevel(game: Dungeon):
     to, ends the game.
     :param game: Dungeon
     """
-    log("Advancing level")
     nextLevelNum = game.currLevel + 1
     if nextLevelNum == len(game.levels):
         return endGame(game)
@@ -193,7 +194,6 @@ def advanceLevel(game: Dungeon):
     while i < numPlayers:  # Populate players in level
         playerName = game.players[i]
         randBoardNum, randBoard = getRandomRoomInLevel(nextLevel)
-        log("Rand board", str(randBoardNum), str(randBoard.dimensions))
         loc = genXRandCoords(1, forbidden, randBoard.origin,
                              randBoard.dimensions).pop()
         if loc not in playerLocs:
@@ -214,22 +214,19 @@ def interactWithExit(playerName: str, location: tuple, game: Dungeon):
     :param location: tuple
     :param game: Dungeon
     """
-    log("Interacting with exit")
     for level in game.levels:
         if location == level.exitLocation:
             if level.exitUnlocked:
                 currBoardNum = whichBoardInLevel(level, location)
                 playersLeft = getPlayersInLevel(level)
-                log("Players left --->", str(playersLeft))
-                if len(playersLeft) == 1:  # last player
+                if len(playersLeft) == 1:  # last playe
                     # FIXME return advanceLevel(game)
-                    log("Last player")
                     return advanceLevel(game)
                 else:
-                    log("Removing player")
                     updatedGame = removePlayer(playerName, currBoardNum, game)
                     if len(getAllPlayers(level)) == 0:
                         updatedGame = endGame(updatedGame)
+                    print('Player {} {}'.format(playerName, "exited"))
                     return updatedGame
 
     return game

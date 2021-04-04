@@ -1,10 +1,344 @@
-#!/bin/bash
+#!/usr/bin/env python3
 
-# Run game
+import sys
+import os
 
-python3 -m pip install --user virtualenv
-python3 -m venv env
-source ../../../bin/activate
-python3 -m pip install --user pygame
-python3 -m pip install --user more_itertools
-python3 localSnarl.py
+if not os.path.isdir("./env/lib/python3.6/site-packages/pygame"):
+    os.system("./setup")
+
+import Globals
+import json
+import pygame
+from pygame.locals import *
+import argparse
+import math
+from Render import renderPlayerView, renderObserverView, renderStatusBar
+from Util import logInFile, genXRandCoords, getPlayer, getAllTiles, \
+    translateScreenLocation, whichBoardInLevel, locationInLevelBounds, \
+    getRandomRoomInLevel, getEnemiesInLevel, getAllEnemies, getAllPlayers, getRandCoordInLevel
+from Convert import convertJsonLevel
+from Create import addPlayersToBoard, addEnemiesToBoard
+from Types import *
+from Player import getVisibleTiles
+import GameManager
+import Enemy as EnemyMove
+
+
+
+def populateEnemies(levelNum: int, levelEnemies: dict, game: Dungeon):
+    for enemyName in levelEnemies.keys():  # Populate enemies in level
+        enemyBoardNum = levelEnemies[enemyName][0]
+        board: Board = game.levels[levelNum].boards[enemyBoardNum]
+        game.levels[levelNum].boards[enemyBoardNum] = addEnemiesToBoard(
+            board, {
+                enemyName: levelEnemies[enemyName][1]})
+
+
+def main():
+    DEFAULT_LEVEL = './snarl.levels'
+    numPlayers = 1
+    startLevel = 1
+    jsonLevels = []
+    isObserving = False
+    numLevels = 0
+
+    parser = argparse.ArgumentParser()  # initialize
+    # this is how you add an optional argument
+    parser.add_argument("--levels",
+                        help="Enter the name of an input JSON Level file",
+                        nargs='?',
+                        const=DEFAULT_LEVEL, type=str)
+    parser.add_argument("--players", help="Enter an amount of players 1-4",
+                        nargs='?',
+                        const=numPlayers, type=int)
+    parser.add_argument("--start",
+                        nargs='?',
+                        help="Enter the number of the level to start the game from",
+                        const=startLevel, type=int)
+    parser.add_argument("--observe", help="Observe the game",
+                        action="store_true")
+
+    # this is called after you define your optional args
+    args = parser.parse_args()
+
+    # Parse level
+    if args.levels:
+        with open(args.levels) as file:
+            wholeFile = file.read()
+            portions = wholeFile.split('\n\n')
+            cleaned = list(filter(lambda port: port != '', portions))
+            numLevels = cleaned[0]
+            jsonLevels = cleaned[1:]
+    else:
+        with open(DEFAULT_LEVEL) as file:
+            wholeFile = file.read()
+            portions = wholeFile.split('\n\n')
+            cleaned = list(filter(lambda port: port != '', portions))
+            numLevels = cleaned[0]
+            jsonLevels = cleaned[1:]
+
+    if args.players:
+        if 1 <= args.players <= 4:
+            numPlayers = args.players
+        else:
+            print("Players must be from 1-4")
+            sys.exit(1)
+
+    if args.start and 0 < args.start <= len(jsonLevels):
+        startLevel = args.start
+
+    if args.observe:
+        isObserving = True
+
+    try:
+        rawJsonGameLevels = jsonLevels[(startLevel - 1):]
+        jsonGameLevels = [json.loads(rawJsonLevel) for rawJsonLevel in
+                          rawJsonGameLevels]
+
+        # this has all the levels needed with the starting level as the first
+        # element in the list
+        levels = [convertJsonLevel(jsonLevel["rooms"], jsonLevel["hallways"],
+                                   jsonLevel["objects"]) for jsonLevel in
+                  jsonGameLevels]
+
+        playerNames = [input("Player {}, enter your name > ".format(i + 1)) for
+                       i in
+                       range(numPlayers)]
+
+        forbidden = [levels[0].keyLocation, levels[0].exitLocation]
+        players = []
+        playerLocs = []
+        i = 0
+        while i < numPlayers:  # Populate players in level
+            playerName = playerNames[i]
+            randBoardNum, randBoard = getRandomRoomInLevel(levels[0])
+            loc = genXRandCoords(1, forbidden, randBoard.origin,
+                                 randBoard.dimensions).pop()
+            if loc not in playerLocs:
+                player = Player(playerName, loc)
+                players.append(player)
+                levels[0].boards[randBoardNum] = addPlayersToBoard(randBoard, {
+                    playerName: player})
+                playerLocs.append(loc)
+                i += 1
+
+        game = Dungeon(levels, playerNames, startLevel - 1, False)
+
+        enemies = []  # LIST of dictionaries for each level
+
+        for i in range(len(game.levels)):
+            numZombies = math.floor((i + 1) / 2) + 1
+            numGhosts = math.floor(((i + 1) - 1) / 2)
+            levelEnemies = {}
+            enemyLocs = []
+            for zombie in range(numZombies):
+                randBoardNum, randBoard = getRandomRoomInLevel(levels[i])
+                name = "zombie" + str((zombie + 1))
+                loc = genXRandCoords(1, playerLocs + forbidden + enemyLocs,
+                                     randBoard.origin,
+                                     randBoard.dimensions).pop()
+                enemyLocs.append(loc)
+                newZombie = Enemy(name, loc)
+                levelEnemies[name] = (randBoardNum, newZombie)
+            for ghost in range(numGhosts):
+                randBoardNum, randBoard = getRandomRoomInLevel(levels[i])
+                name = "ghost" + str((ghost + 1))
+                loc = genXRandCoords(1, playerLocs + forbidden + enemyLocs,
+                                     randBoard.origin,
+                                     randBoard.dimensions)
+                # loc = getRandCoordInLevel(level, True)
+                enemyLocs.append(loc)
+                newGhost = Enemy(name, loc, "ghost")
+                levelEnemies[name] = (randBoardNum, newGhost)
+
+            enemies.append(levelEnemies)
+            populateEnemies(i, levelEnemies, game)
+
+        # Initialize screen
+        pygame.init()
+        clock = pygame.time.Clock()
+        screen = pygame.display.set_mode(Globals.SCREEN_DIMENSIONS,
+                                         flags=pygame.RESIZABLE)
+        pygame.display.set_caption("Local Snarl Demo")
+
+        # Fill background. Draw onto this
+        gameDisplaySize = (
+            Globals.GAME_DISPLAY_WIDTH, Globals.GAME_DISPLAY_HEIGHT)
+        background = pygame.Surface(gameDisplaySize)
+        statusBarSize = (Globals.STATUS_BAR_WIDTH, Globals.STATUS_BAR_HEIGHT)
+        statusBar = pygame.Surface(statusBarSize)
+        background = background.convert()  # converts Surface to single-pixel
+        statusBar = statusBar.convert()  # converts Surface to single-pixel
+        # format
+        background.fill(Globals.BG_COLOR)
+        statusBar.fill(Globals.BG_COLOR)
+
+        currLevel0: Level = game.levels[game.currLevel]
+
+        def getEnemies(enemiesDict: list):
+            acc = []
+            for enemiesInLevel in enemiesDict:
+                for enemyName in enemiesInLevel.keys():
+                    acc.append(enemiesInLevel[enemyName][1])
+            return acc
+
+        allEnemies = getEnemies(enemies)
+
+
+        def locationInTiles(location: tuple, tiles: dict):
+            lrow, lcol = location
+            for row in tiles.keys():
+                if lrow == row:
+                    for col in tiles[row].keys():
+                        if lcol == col:
+                            return True
+            return False
+
+        # if isObserving:
+        #     allTiles = getAllTiles(currLevel0)
+        #     view = ObserverView("observer", allTiles, [currLevel0.keyLocation],
+        #                         [currLevel0.exitLocation],
+        #                         players, allEnemies)
+        #     renderObserverView(background, view)
+        # else:
+        #     player: Player = getPlayer(currLevel0, playerNames[0])
+        #     visibleTiles = getVisibleTiles(player, currLevel0)
+        #     nearbyEnemies = [enemy for enemy in allEnemies if
+        #                      locationInTiles(enemy.location, visibleTiles)]
+        #     nearbyPlayers = [player for player in players if
+        #                      locationInTiles(player.location, visibleTiles)]
+        #     view = PlayerView(playerNames[0],
+        #                       visibleTiles,
+        #                       player.location,
+        #                       [currLevel0.keyLocation],
+        #                       [currLevel0.exitLocation],
+        #                       nearbyPlayers, nearbyEnemies)
+        #     # renderPlayerView(background, view)
+
+        # Block events we don't care about and allow ones we do
+        # (speeds processing)
+        pygame.event.set_blocked(None)
+        pygame.event.set_allowed([QUIT, MOUSEBUTTONDOWN, MOUSEBUTTONUP])
+
+        hasMoved = {}
+        for player in game.players:
+            hasMoved[player] = 0
+
+        while True:
+
+            # pygame.time.wait(250)
+            clock.tick(30)  # cap at 30fps
+
+            currLevel: Level = game.levels[game.currLevel]
+
+            if game.isGameOver:
+                sys.exit(0)
+
+            playerName = game.players[currLevel.playerTurn]
+            player: Player = getPlayer(currLevel, playerName)
+
+
+            # player not in level (ejected or exited)
+            if not player:
+                hasMoved[playerName] = 1
+                if currLevel.playerTurn == len(game.players) - 1:
+                    currLevel.playerTurn = 0
+                else:
+                    currLevel.playerTurn = currLevel.playerTurn + 1
+                # currLevel.playerTurn = currLevel.playerTurn + 1
+                # currLevel.enemyTurn = currLevel.enemyTurn + 1
+                continue
+
+
+            # Move all enemies at beginning of rounds (all players moved)
+            numPlayersInGame = len(game.players) - 1
+            # if currLevel.enemyTurn == numPlayersInGame:
+            if all(hasMoved.values()):
+                for enemy in getEnemiesInLevel(currLevel):
+                    nextMove = EnemyMove.enemyNextMove(enemy, game)
+                    GameManager.move(enemy.name, nextMove, game,
+                                     isPlayer=False)
+                # currLevel.enemyTurn = -1
+                for moved in hasMoved.keys():
+                    hasMoved[moved] = 0
+
+            board1: Board = currLevel.boards[
+                whichBoardInLevel(currLevel,
+                                  player.location)]
+
+            # Render appropriate view
+            if isObserving:
+                allTiles = getAllTiles(currLevel)
+                allPlayers = getAllPlayers(currLevel)
+                allEnemies = getAllEnemies(currLevel)
+                view = ObserverView("observer", allTiles,
+                                    [currLevel.keyLocation],
+                                    [currLevel.exitLocation],
+                                    allPlayers, allEnemies)
+                renderObserverView(background, view)
+            else:
+                visibleTiles = getVisibleTiles(player, currLevel)
+                visiblePlayers = [board1.players[pname] for pname in
+                                  board1.players.keys() if
+                                  locationInTiles(
+                                      # FIXME bug when player next to you
+                                      board1.players[pname].location,
+                                      visibleTiles)]
+                visibleEnemies = [board1.enemies[ename] for ename in
+                                  board1.enemies.keys() if
+                                  locationInTiles(
+                                      board1.enemies[ename].location,
+                                      visibleTiles)]
+                newView = PlayerView(playerName,
+                                     visibleTiles,
+                                     player.location,
+                                     [currLevel.keyLocation],
+                                     [currLevel.exitLocation],
+                                     visiblePlayers,
+                                     visibleEnemies)
+                renderPlayerView(background, newView)
+
+            # Everyone gets a status bar (yay)
+            renderStatusBar(statusBar, game)
+
+            # handle user events
+            for event in pygame.event.get():
+                if event.type == QUIT:
+                    sys.exit(0)
+                if event.type == MOUSEBUTTONDOWN:
+                    newLoc = translateScreenLocation(event.pos)
+                    if not locationInLevelBounds(currLevel, newLoc):
+                        continue
+                    GameManager.move(playerName, newLoc, game)
+                    hasMoved[playerName] = 1
+
+            """
+            gameCollection ---> {gameName: dungeon}
+            observerCollection ---> {observerName: gameName}
+
+            when observe requested/game state change
+                Observer.send(observerName, gameCollection[observerCollection[observerName]])
+            """
+
+            # map of keys pressed
+
+            # keys = pygame.key.get_pressed()
+            screen.blit(background,
+                        (0, Globals.STATUS_BAR_HEIGHT))  # render pixels to
+            screen.blit(statusBar, (0, 0))
+            pygame.display.update()  # update
+
+
+    except FileNotFoundError:
+        print("Couldn't find that level file. Try again")
+        sys.exit(1)
+    except json.JSONDecodeError:
+        print("Malformed levels")
+        sys.exit(1)
+    except KeyboardInterrupt:
+        print("\nExiting...")
+        sys.exit(0)
+
+
+if __name__ == '__main__':
+    main()
