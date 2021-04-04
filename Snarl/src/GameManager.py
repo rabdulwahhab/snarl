@@ -1,9 +1,10 @@
 from Types import *
 from Create import createDungeon, addPlayersToBoard, removePlayersFromBoard
 from Move import moveEntity
-from Rulechecker import destHasEnemy, destHasKey, destHasExit, playerCanMoveTo
+from Rulechecker import destHasEnemy, destHasKey, destHasExit, destHasPlayer, \
+    destHasWall, playerCanMoveTo
 from Util import whichBoardInLevel, logInFile, getPlayer, genXRandCoords, \
-    getRandomRoomInLevel, getPlayersInLevel, getEnemy
+    getRandomRoomInLevel, getPlayersInLevel, getEnemy, getAllPlayers
 
 log = logInFile("GameManager.py")
 
@@ -29,8 +30,10 @@ def move(entityName: str, destination: tuple, game: Dungeon, isPlayer=True):
                                   destination, isPlayer=True)
         if updatedLevel.playerTurn == len(game.players) - 1:
             updatedLevel.playerTurn = 0
+            updatedLevel.enemyTurn = updatedLevel.enemyTurn + 1
         else:
             updatedLevel.playerTurn = updatedLevel.playerTurn + 1
+            updatedLevel.enemyTurn = updatedLevel.enemyTurn + 1
         game.levels[game.currLevel] = updatedLevel
         updatedGame = interact(entityName, destination, game)
         return updatedGame
@@ -38,7 +41,7 @@ def move(entityName: str, destination: tuple, game: Dungeon, isPlayer=True):
         updatedLevel = moveEntity(currLevel, entityName, currBoardNum,
                                   newBoardNum, destination, isPlayer=False)
         game.levels[game.currLevel] = updatedLevel
-        updatedGame = enemyInteract(game)
+        updatedGame = enemyInteract(entityName, destination, game)
         return updatedGame
     else:
         return game
@@ -69,18 +72,51 @@ def interact(playerName: str, location: tuple, game: Dungeon):
         return game
 
 
-# TODO
-def enemyInteract(game: Dungeon):
+def enemyInteract(enemyName: str, destination: tuple, game: Dungeon):
+    currLevel: Level = game.levels[game.currLevel]
+    currBoardNum = whichBoardInLevel(currLevel, destination)
+    currBoard: Board = currLevel.boards[currBoardNum]
+    if destHasPlayer(destination, currBoard):
+        return interactWithPlayer(destination, game)
+    elif destHasWall(destination, currLevel):
+        return interactWithWall(enemyName, destination, game)
+    else:
+        return game
+
+
+def interactWithPlayer(dest: tuple, game: Dungeon):
+    currLevel: Level = game.levels[game.currLevel]
+    currBoardNum = whichBoardInLevel(currLevel, dest)
+    currBoard: Board = currLevel.boards[currBoardNum]
+    for player in currBoard.players.values():
+        if player.location == dest:
+            updatedGame = removePlayer(player.name, currBoardNum, game)
+            if len(getAllPlayers(currLevel)) == 0:
+                updatedGame = endGame(updatedGame)
+            return updatedGame
     return game
 
-# TODO
-def interactWithPlayer():
-    return None
 
-# TODO
-def interactWithWall():
-    return None
-# TODO: in rulechecker add destHasWall
+def interactWithWall(enemyName: str, destination: tuple, game: Dungeon):
+    """
+    Only for ghosts, teleports the enemy to a random location in the level,
+    or doesn't do anything if that's not possible. Returns an updated (or not)
+    game.
+    """
+    currLevel = game.levels[game.currLevel]
+    randBoardNum, randBoard = getRandomRoomInLevel(currLevel)
+    enemy = getEnemy(currLevel, enemyName)
+    while True:
+        loc = genXRandCoords(1, [enemy.location],
+                             randBoard.origin,
+                             randBoard.dimensions).pop()
+        if not destHasWall(loc, currLevel) and not destHasPlayer(loc,
+                                                                 randBoard):
+            newDestForGhost = loc
+            break
+    # Move ghost to newDest, and delete from currBoard
+    game = move(enemyName, newDestForGhost, game, isPlayer=False)
+    return game
 
 
 def interactWithEnemy(playerName: str, location: tuple, game: Dungeon):
@@ -97,8 +133,12 @@ def interactWithEnemy(playerName: str, location: tuple, game: Dungeon):
     for enemyName in currBoard.enemies.keys():
         enemy: Enemy = currBoard.enemies[enemyName]
         if location == enemy.location:  # fight!
-            del currBoard.players[playerName]
-            break
+
+            updatedGame = removePlayer(playerName, currBoardNum, game)
+            # if last player in level, game over
+            if len(getAllPlayers(currLevel)) == 0:
+                updatedGame = endGame(updatedGame)
+            return updatedGame
     return game
 
 
@@ -127,7 +167,7 @@ def removePlayer(playerName: str, currBoardNum: int, game: Dungeon):
     currBoard: Board = currLevel.boards[currBoardNum]
     player = currBoard.players[playerName]
     updatedBoard = removePlayersFromBoard(currBoard, {playerName: player})
-    currLevel.boards[currBoardNum] = updatedBoard
+    game.levels[game.currLevel].boards[currBoardNum] = updatedBoard
     return game
 
 
@@ -187,7 +227,11 @@ def interactWithExit(playerName: str, location: tuple, game: Dungeon):
                     return advanceLevel(game)
                 else:
                     log("Removing player")
-                    return removePlayer(playerName, currBoardNum, game)
+                    updatedGame = removePlayer(playerName, currBoardNum, game)
+                    if len(getAllPlayers(level)) == 0:
+                        updatedGame = endGame(updatedGame)
+                    return updatedGame
+
     return game
 
 

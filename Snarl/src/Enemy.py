@@ -49,9 +49,9 @@ def enemyStrat(possMoves: list, playerLocs: list):
             dist = distanceFormula(playerLoc, possMove)
             if distTemp is None:
                 distTemp = dist
-            if dist < distTemp:
-                shortestTemp = playerLoc
-        allShortest.append({"possMove": possMove, "shortest": shortestTemp})
+            if dist <= distTemp:
+                shortestTemp = possMove
+    #   allShortest.append({"possMove": possMove, "shortest": shortestTemp})
     # shortestEntry = reduce(
     #    lambda acc, entry: entry if entry["shortest"] < acc[
     #        "shortest"] else acc, allShortest)
@@ -88,7 +88,7 @@ def enemyNextMove(enemy: Enemy, game: Dungeon):
     enemyBoardNum = whichBoardInLevel(game.levels[game.currLevel],
                                       enemy.location)
     possMoves = enemyPossibleMoves(enemy, game)
-
+    log("possible enemy moves to choose from:", str(possMoves))
     if len(possMoves) == 0:
         return enemy.location
 

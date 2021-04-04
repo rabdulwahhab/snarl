@@ -89,6 +89,9 @@ def addEnemiesToBoard(board: Board, enemies: dict):
     return updatedBoard
 
 
+def genEnemies(num)
+
+
 def createGenericBoardTiles(dimensions: tuple, origin: tuple,
                             doorLocations: list):
     """

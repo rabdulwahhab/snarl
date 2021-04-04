@@ -84,6 +84,26 @@ def genXRandCoords(numRandCoord, rejectCoords, origin, dimensions):
     return newCoordinates
 
 
+def getRandCoordInLevel(level: Level, canBeWall=False):
+    randBoard = (randint(0, len(level.boards) - 1))
+    rows = level.boards[randBoard].tiles.keys()
+    randRow = (randint(0, len(rows) - 1))
+    cols = level.boards[randBoard].tiles[rows[randRow]].keys()
+    randCol = (randint(0, len(cols) - 1))
+    randomCoord = (rows[randRow], cols[randCol])
+    tile = level.boards[randBoard].tiles[rows[randRow]][cols[randCol]]
+    if tile.tileType == TileEnum.WALL and not canBeWall:
+        getRandCoordInLevel(level)
+    else:
+        return randomCoord
+
+    # [result] = genXRandCoords(1, rejectCoords, origin, dimensions)
+    # if locationInLevelBounds(level, result):
+    #     return result
+    # else:
+    #     return genRandCoordInLevel(level, rejectCoords, origin, dimensions)
+
+
 def distanceFormula(p1: tuple, p2: tuple):
     """
     dist = sqrt((p2x - p1x)**2 + (p2y - p1y)**2)
@@ -110,6 +130,22 @@ def getAllTiles(level: Level):
                 else:
                     tiles[row] = {col: board.tiles[row][col]}
     return tiles
+
+
+def getAllPlayers(level: Level):
+    acc = []
+    for board in level.boards:
+        for player in board.players.values():
+            acc.append(player)
+    return acc
+
+
+def getAllEnemies(level: Level):
+    acc = []
+    for board in level.boards:
+        for enemy in board.enemies.values():
+            acc.append(enemy)
+    return acc
 
 
 def locationInLevelBounds(level: Level, location: tuple):

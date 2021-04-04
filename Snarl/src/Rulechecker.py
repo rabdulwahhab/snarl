@@ -125,6 +125,22 @@ def destHasPlayer(destination: tuple, board: Board):
     return False
 
 
+def destHasWall(destination: tuple, level: Level):
+    """
+    Checks if moving to the destination will cause an interaction with a wall
+    :param destination: tuple
+    :param level: Level
+    """
+    boardNum = whichBoardInLevel(level, destination)
+    if boardNum != -1:
+        board = level.boards[boardNum]
+        tile = board.tiles[destination[0]][destination[1]]
+        if tile.tileType == TileEnum.WALL:
+            return True
+    return False
+
+
+
 def destHasKey(destination: tuple, level: Level):
     """
     Checks if moving to the destination will cause an interaction with a key.

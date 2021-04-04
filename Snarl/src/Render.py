@@ -20,8 +20,8 @@ def getTileColor(tileType: TileEnum):
 
 def renderTile(background: pygame.Surface, tileType: TileEnum, row: int,
                col: int, hasKey=False, hasExit=False):
-    log = logInFile("Render.py", "renderTile")
-    log(str(row), str(col))
+    # log = logInFile("Render.py", "renderTile")
+    # log(str(row), str(col))
     screenX, screenY = getScreenLocation((row, col))  # absolute location
     tileRect = pygame.Rect(screenX, screenY, Globals.TILE_WIDTH,
                            Globals.TILE_HEIGHT)
@@ -36,8 +36,8 @@ def renderEnemy(background: pygame.Surface, enemy: Enemy):
     x, y = getScreenLocation(enemy.location)
     tileRect = pygame.Rect(x, y, Globals.TILE_WIDTH, Globals.TILE_HEIGHT)
     # tileColor = Colors.ENEMY
-    log = logInFile("Render.py", "renderEnemy")
-    log(enemy.enemyType, enemy.name, str(enemy.location))
+    # log = logInFile("Render.py", "renderEnemy")
+    # log(enemy.enemyType, enemy.name, str(enemy.location))
     enemyLetter = Globals.FONT.render(formatInitial(enemy.name), True,
                                       Colors.ENEMY)
     # pygame.draw.rect(background, tileColor, tileRect)
@@ -45,8 +45,8 @@ def renderEnemy(background: pygame.Surface, enemy: Enemy):
 
 
 def renderEnemies(background: pygame.Surface, enemies: dict):
-    log = logInFile("Render.py", "renderEnemies")
-    log()
+    # log = logInFile("Render.py", "renderEnemies")
+    # log()
     enemyNames = enemies.keys()
     for name in enemyNames:
         enemy = enemies[name]
@@ -54,15 +54,15 @@ def renderEnemies(background: pygame.Surface, enemies: dict):
 
 
 def renderEnemiesViews(background: pygame.Surface, enemies: list):
-    log = logInFile("Render.py", "renderEnemiesViews")
-    log()
+    # log = logInFile("Render.py", "renderEnemiesViews")
+    # log()
     for enemy in enemies:
         renderEnemy(background, enemy)
 
 
 def renderPlayer(background: pygame.Surface, player: Player):
-    log = logInFile("Render.py", "renderPlayer")
-    log(player.name, str(player.location))
+    # log = logInFile("Render.py", "renderPlayer")
+    # log(player.name, str(player.location))
     x, y = getScreenLocation(player.location)
     tileRect = pygame.Rect(x, y, Globals.TILE_WIDTH, Globals.TILE_HEIGHT)
     # tileColor = Colors.PLAYER
@@ -74,8 +74,8 @@ def renderPlayer(background: pygame.Surface, player: Player):
 
 
 def renderPlayers(background: pygame.Surface, players: dict):
-    log = logInFile("Render.py", "renderPlayers")
-    log()
+    # log = logInFile("Render.py", "renderPlayers")
+    # log()
     playerNames = players.keys()
     for name in playerNames:
         player = players[name]
@@ -83,8 +83,8 @@ def renderPlayers(background: pygame.Surface, players: dict):
 
 
 def renderPlayersViews(background: pygame.Surface, players: list):
-    log = logInFile("Render.py", "renderPlayersViews")
-    log()
+    # log = logInFile("Render.py", "renderPlayersViews")
+    # log()
     for player in players:
         renderPlayer(background, player)
 
@@ -100,8 +100,8 @@ def renderItem(background: pygame.Surface, item: Item):
 
 
 def renderItems(background: pygame.Surface, items):
-    log = logInFile("Render.py", "renderItems")
-    log()
+    # log = logInFile("Render.py", "renderItems")
+    # log()
     for item in items:
         if not item.hasBeenAcquired:
             renderItem(background, item)
@@ -129,10 +129,10 @@ def renderTiles(background: pygame.Surface, tiles: dict, keyLoc: tuple,
 def renderBoard(background: pygame.Surface, board: Board, keyLoc: tuple,
                 exitLoc: tuple):
     # FIXME only Rooms should render door tiles
-    log = logInFile("Render.py", "renderBoard")
-    log()
+    # log = logInFile("Render.py", "renderBoard")
+    # log()
     renderTiles(background, board.tiles, exitLoc, keyLoc)
-    log("Players in board:", str(board.players))
+    # log("Players in board:", str(board.players))
     renderPlayers(background, board.players)
     renderEnemies(background, board.enemies)
     # renderItems(background, board.items)
@@ -146,8 +146,8 @@ def renderLevel(background: pygame.Surface, level: Level):
     :param boardNumber:
     :return:
     """
-    log = logInFile("Render.py", "renderLevel")
-    log()
+    # log = logInFile("Render.py", "renderLevel")
+    # log()
     # TODO render entire level (including all boards)
     for board in level.boards:
         renderBoard(background, board, level.keyLocation, level.exitLocation)
@@ -160,8 +160,8 @@ def renderDungeon(background: pygame.Surface, dungeon: Dungeon):
     :param dungeon: Dungeon
     :return:
     """
-    log = logInFile("Render.py", "renderDungeon")
-    log()
+    # log = logInFile("Render.py", "renderDungeon")
+    # log()
     renderLevel(background, dungeon.levels[dungeon.currLevel])
 
 
@@ -169,8 +169,8 @@ def renderPlayerView(background: pygame.Surface, view: PlayerView):
     # NOTE could refactor for exit + key locations
     # clear screen
     background.fill(Globals.BG_COLOR)
-    log = logInFile("Render.py", "renderPlayerView")
-    log(str(view.keys), str(view.exits))
+    # log = logInFile("Render.py", "renderPlayerView")
+    # log(str(view.keys), str(view.exits))
     renderTiles(background, view.tiles, view.keys[0],
                 view.exits[0])
     renderPlayersViews(background, view.players)
@@ -180,8 +180,7 @@ def renderPlayerView(background: pygame.Surface, view: PlayerView):
 def renderObserverView(background: pygame.Surface, view: ObserverView):
     # clear screen
     background.fill(Globals.BG_COLOR)
-    renderTiles(background, view.tiles, view.exits[0],
-                view.keys[0])
+    renderTiles(background, view.tiles, view.keys[0], view.exits[0])
     renderPlayersViews(background, view.players)
     renderEnemiesViews(background, view.enemies)
     if len(view.history) > 0:
@@ -189,7 +188,7 @@ def renderObserverView(background: pygame.Surface, view: ObserverView):
 
 
 def renderStatusBar(statusBar: pygame.Surface, game: Dungeon):
-    log = logInFile("Render.py", "renderStatusBar")
+    # log = logInFile("Render.py", "renderStatusBar")
     playerTurn = game.levels[game.currLevel].playerTurn
     levelNum = game.currLevel + 1
     statusBar.fill(Colors.WALL)

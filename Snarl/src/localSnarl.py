@@ -9,7 +9,7 @@ import math
 from Render import renderPlayerView, renderObserverView, renderStatusBar
 from Util import logInFile, genXRandCoords, getPlayer, getAllTiles, \
     translateScreenLocation, whichBoardInLevel, locationInLevelBounds, \
-    getRandomRoomInLevel, getEnemiesInLevel
+    getRandomRoomInLevel, getEnemiesInLevel, getAllEnemies, getAllPlayers, getRandCoordInLevel
 from Convert import convertJsonLevel
 from Create import addPlayersToBoard, addEnemiesToBoard
 from Types import *
@@ -128,19 +128,18 @@ def main():
         game = Dungeon(levels, playerNames, startLevel - 1, False)
 
         enemies = []  # LIST of dictionaries for each level
-        enemyLocs = []
+
         for i in range(len(game.levels)):
             numZombies = math.floor((i + 1) / 2) + 1
             numGhosts = math.floor(((i + 1) - 1) / 2)
             log("NUM ZOMBIES", str(numZombies), "NUM GHOSTS", str(numGhosts))
             levelEnemies = {}
+            enemyLocs = []
             for zombie in range(numZombies):
-                log("OUR i is ", str(zombie))
-                randBoardNum, randBoard = getRandomRoomInLevel(levels[0])
-                log("randomboardNum = ", str(randBoardNum))
+                randBoardNum, randBoard = getRandomRoomInLevel(levels[i])
                 name = "zombie" + str((zombie + 1))
-                log("BUILDIGN NEW ZOMBIEEE")
-                log("NAME: ", name)
+                # log("BUILDIGN NEW ZOMBIEEE")
+                # log("NAME: ", name)
                 loc = genXRandCoords(1, playerLocs + forbidden + enemyLocs,
                                      randBoard.origin,
                                      randBoard.dimensions).pop()
@@ -149,11 +148,12 @@ def main():
                 newZombie = Enemy(name, loc)
                 levelEnemies[name] = (randBoardNum, newZombie)
             for ghost in range(numGhosts):
-                randBoardNum, randBoard = getRandomRoomInLevel(levels[0])
+                randBoardNum, randBoard = getRandomRoomInLevel(levels[i])
                 name = "ghost" + str((ghost + 1))
                 loc = genXRandCoords(1, playerLocs + forbidden + enemyLocs,
                                      randBoard.origin,
-                                     randBoard.dimensions).pop()
+                                     randBoard.dimensions)
+                # loc = getRandCoordInLevel(level, True)
                 enemyLocs.append(loc)
                 newGhost = Enemy(name, loc, "ghost")
                 levelEnemies[name] = (randBoardNum, newGhost)
@@ -203,97 +203,138 @@ def main():
                             return True
             return False
 
-        if isObserving:
-            log("OBSERVER VIEW")
-            allTiles = getAllTiles(currLevel0)
-            view = ObserverView("observer", allTiles, [currLevel0.keyLocation],
-                                [currLevel0.exitLocation],
-                                players, allEnemies)
-            renderObserverView(background, view)
-        else:
-            log("PLAYER VIEW")
-            player: Player = getPlayer(currLevel0, playerNames[0])
-            visibleTiles = getVisibleTiles(player, currLevel0)
-            nearbyEnemies = [enemy for enemy in allEnemies if
-                             locationInTiles(enemy.location, visibleTiles)]
-            nearbyPlayers = [player for player in players if
-                             locationInTiles(player.location, visibleTiles)]
-            view = PlayerView(playerNames[0],
-                              visibleTiles,
-                              player.location,
-                              [currLevel0.keyLocation],
-                              [currLevel0.exitLocation],
-                              nearbyPlayers, nearbyEnemies)
-            # renderPlayerView(background, view)
+        # if isObserving:
+        #     log("OBSERVER VIEW")
+        #     allTiles = getAllTiles(currLevel0)
+        #     view = ObserverView("observer", allTiles, [currLevel0.keyLocation],
+        #                         [currLevel0.exitLocation],
+        #                         players, allEnemies)
+        #     renderObserverView(background, view)
+        # else:
+        #     log("PLAYER VIEW")
+        #     player: Player = getPlayer(currLevel0, playerNames[0])
+        #     visibleTiles = getVisibleTiles(player, currLevel0)
+        #     nearbyEnemies = [enemy for enemy in allEnemies if
+        #                      locationInTiles(enemy.location, visibleTiles)]
+        #     nearbyPlayers = [player for player in players if
+        #                      locationInTiles(player.location, visibleTiles)]
+        #     view = PlayerView(playerNames[0],
+        #                       visibleTiles,
+        #                       player.location,
+        #                       [currLevel0.keyLocation],
+        #                       [currLevel0.exitLocation],
+        #                       nearbyPlayers, nearbyEnemies)
+        #     # renderPlayerView(background, view)
 
         # Block events we don't care about and allow ones we do
         # (speeds processing)
         pygame.event.set_blocked(None)
         pygame.event.set_allowed([QUIT, MOUSEBUTTONDOWN, MOUSEBUTTONUP])
 
+        hasMoved = {}
+        for player in game.players:
+            hasMoved[player] = 0
+
         while True:
 
             # pygame.time.wait(250)
             clock.tick(30)  # cap at 30fps
 
-            if game.isGameOver:  # TODO something special
-                log("The game is over!")
-                sys.exit(0)
-
             currLevel: Level = game.levels[game.currLevel]
 
-            # Move all enemies at beginning of rounds (all players moved)
-            if currLevel.playerTurn == 0:
-                for enemy in getEnemiesInLevel(currLevel):
-                    nextMove = EnemyMove.enemyNextMove(enemy, game)
-                    GameManager.move(enemy.name, nextMove, game, isPlayer=False)
+            if game.isGameOver:
+                log("The game is over! If you won, congrats!")
+                sys.exit(0)
 
-
+            log("Player turn is ", str(currLevel.playerTurn))
             playerName = game.players[currLevel.playerTurn]
-
-            log("Player turn", str(currLevel.playerTurn))
-
             player: Player = getPlayer(currLevel, playerName)
+
+            log("Game players", str(game.players))
+            log("Level players", str(getAllPlayers(currLevel)))
+
             # player not in level (ejected or exited)
             if not player:
-                currLevel.playerTurn = currLevel.playerTurn + 1
+                log("Skipping turn")
+                hasMoved[playerName] = 1
+                log("HASSSMOVVVEEEEDD POST ENEMIESS", str(hasMoved))
+                if currLevel.playerTurn == len(game.players) - 1:
+                    currLevel.playerTurn = 0
+                else:
+                    currLevel.playerTurn = currLevel.playerTurn + 1
+                # currLevel.playerTurn = currLevel.playerTurn + 1
+                # currLevel.enemyTurn = currLevel.enemyTurn + 1
                 continue
 
-            # Render player view
+            log("Player turn", str(currLevel.playerTurn))
+            log("Enemy turn:", str(currLevel.enemyTurn))
+
+            # Move all enemies at beginning of rounds (all players moved)
+            numPlayersInGame = len(game.players) - 1
+            # log("numPlayersInGame", str(numPlayersInGame))
+            # if currLevel.enemyTurn == numPlayersInGame:
+            if all(hasMoved.values()):
+                for enemy in getEnemiesInLevel(currLevel):
+                    nextMove = EnemyMove.enemyNextMove(enemy, game)
+                    log("Next move is", str(nextMove))
+                    GameManager.move(enemy.name, nextMove, game,
+                                     isPlayer=False)
+                # currLevel.enemyTurn = -1
+                for moved in hasMoved.keys():
+                    hasMoved[moved] = 0
+                log("HASSSMOVVVEEEEDD POST ENEMIESS", str(hasMoved))
+
             board1: Board = currLevel.boards[
                 whichBoardInLevel(currLevel,
                                   player.location)]
-            visibleTiles = getVisibleTiles(player, currLevel)
-            visiblePlayers = [board1.players[pname] for pname in
-                              board1.players.keys() if
-                              locationInTiles( # FIXME bug when player next to you
-                                  board1.players[pname].location,
-                                  visibleTiles)]
-            visibleEnemies = [board1.enemies[ename] for ename in
-                              board1.enemies.keys() if
-                              locationInTiles(
-                                  board1.enemies[ename].location,
-                                  visibleTiles)]
-            newView = PlayerView(playerName,
-                                 visibleTiles,
-                                 player.location,
-                                 [currLevel.keyLocation],
-                                 [currLevel.exitLocation],
-                                 visiblePlayers,
-                                 visibleEnemies)
-            renderPlayerView(background, newView)
+
+            # Render appropriate view
+            if isObserving:
+                allTiles = getAllTiles(currLevel)
+                allPlayers = getAllPlayers(currLevel)
+                allEnemies = getAllEnemies(currLevel)
+                view = ObserverView("observer", allTiles,
+                                    [currLevel.keyLocation],
+                                    [currLevel.exitLocation],
+                                    allPlayers, allEnemies)
+                renderObserverView(background, view)
+            else:
+                visibleTiles = getVisibleTiles(player, currLevel)
+                visiblePlayers = [board1.players[pname] for pname in
+                                  board1.players.keys() if
+                                  locationInTiles(
+                                      # FIXME bug when player next to you
+                                      board1.players[pname].location,
+                                      visibleTiles)]
+                visibleEnemies = [board1.enemies[ename] for ename in
+                                  board1.enemies.keys() if
+                                  locationInTiles(
+                                      board1.enemies[ename].location,
+                                      visibleTiles)]
+                newView = PlayerView(playerName,
+                                     visibleTiles,
+                                     player.location,
+                                     [currLevel.keyLocation],
+                                     [currLevel.exitLocation],
+                                     visiblePlayers,
+                                     visibleEnemies)
+                renderPlayerView(background, newView)
+
+            # Everyone gets a status bar (yay)
             renderStatusBar(statusBar, game)
 
             # handle user events
             for event in pygame.event.get():
                 if event.type == QUIT:
                     sys.exit(0)
-                if event.type == MOUSEBUTTONDOWN and not isObserving:
+                if event.type == MOUSEBUTTONDOWN:  # FIXME and not isObserving:
                     newLoc = translateScreenLocation(event.pos)
                     if not locationInLevelBounds(currLevel, newLoc):
                         continue
-                    log("Got click at", str(event.pos), "--->", str(newLoc))
+                    # log("Got click at", str(event.pos), "--->", str(newLoc))
                     GameManager.move(playerName, newLoc, game)
+                    hasMoved[playerName] = 1
+                    log("HASSSMOVVVEEEEDD", str(hasMoved))
 
             """
             gameCollection ---> {gameName: dungeon}
