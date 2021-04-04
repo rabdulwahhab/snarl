@@ -1,0 +1,5 @@
+#!/bin/bash
+
+# Run game
+
+python localSnarl.py
