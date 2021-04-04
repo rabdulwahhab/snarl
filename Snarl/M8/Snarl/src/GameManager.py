@@ -179,7 +179,6 @@ def advanceLevel(game: Dungeon):
     to, ends the game.
     :param game: Dungeon
     """
-    log("Advancing level")
     nextLevelNum = game.currLevel + 1
     if nextLevelNum == len(game.levels):
         return endGame(game)
@@ -193,7 +192,6 @@ def advanceLevel(game: Dungeon):
     while i < numPlayers:  # Populate players in level
         playerName = game.players[i]
         randBoardNum, randBoard = getRandomRoomInLevel(nextLevel)
-        log("Rand board", str(randBoardNum), str(randBoard.dimensions))
         loc = genXRandCoords(1, forbidden, randBoard.origin,
                              randBoard.dimensions).pop()
         if loc not in playerLocs:
@@ -214,19 +212,15 @@ def interactWithExit(playerName: str, location: tuple, game: Dungeon):
     :param location: tuple
     :param game: Dungeon
     """
-    log("Interacting with exit")
     for level in game.levels:
         if location == level.exitLocation:
             if level.exitUnlocked:
                 currBoardNum = whichBoardInLevel(level, location)
                 playersLeft = getPlayersInLevel(level)
-                log("Players left --->", str(playersLeft))
                 if len(playersLeft) == 1:  # last player
                     # FIXME return advanceLevel(game)
-                    log("Last player")
                     return advanceLevel(game)
                 else:
-                    log("Removing player")
                     updatedGame = removePlayer(playerName, currBoardNum, game)
                     if len(getAllPlayers(level)) == 0:
                         updatedGame = endGame(updatedGame)
