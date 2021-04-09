@@ -19,7 +19,7 @@ class Dungeon:
                  isGameOver: bool, name="default"):
         self.levels = levels
         self.players = players
-        self.currLevel = currLevel
+        self.currLevel = currLevel  # 0-indexed
         self.isGameOver = isGameOver
         self.name = name
 
