@@ -6,10 +6,14 @@ import argparse
 import re
 
 sys.path.append("../")
-from Util import logInFile, getRandomRoomInLevel, genXRandCoords
+from Util import logInFile, getRandomRoomInLevel, genXRandCoords, \
+    isDoorLocation, isTraversable, whichBoardInLevel
+from Player import getVisibleTiles, getFieldOfView, getPlayer
 from Types import *
+from GameManager import *
 from Messages import *
 from Convert import convertJsonLevel, addPlayersToBoard, addEnemiesToBoard
+from more_itertools import first_true
 
 """
 The Snarl Server:
@@ -96,7 +100,7 @@ def initEnemies(game: Dungeon, initPlayerLocs: list):
     return game
 
 
-def closeConns(conns: list):
+def closeConns(conns: dict):
     for conn in conns.values():
         conn.close()
 
@@ -110,6 +114,104 @@ def broadcast(msg: str, conns: dict):
 def sendPlayer(playerName: str, msg: str, conns: dict):
     conn = conns[playerName]
     conn.send(msg.encode('utf-8'))
+
+
+def getTileType(location: tuple, game: Dungeon):
+    """
+    Return 0, 1, or 2 depending on what lies
+    at the given location
+    """
+    if isDoorLocation(location, game):
+        return 2
+    elif isTraversable(location, game):
+        return 1
+    else:
+        return 0
+
+
+def getTileLayout(game: Dungeon, player: Player):
+    """
+    Returns the tile layout of around a player currently in the game.
+    :params game: Dungeon
+    :params player: Player
+    """
+    layout = [[-1, -1, -1, -1, -1],
+              [-1, -1, -1, -1, -1],
+              [-1, -1, -1, -1, -1],
+              [-1, -1, -1, -1, -1],
+              [-1, -1, -1, -1, -1]]
+    pRow, pCol = player.location
+    origin = (pRow - 2, pCol - 2)
+    for r in range(5):
+        for c in range(5):
+            relLoc = (origin[0] + r, origin[1] + c)
+            layout[r][c] = getTileType(relLoc, game)
+    return layout
+
+
+def getEnemiesAroundPlayer(possMoves: list, game: Dungeon):
+    """
+    Returns the enemies around a player in JSON format.
+    :params possMoves: list
+    :params game: Dungeon
+    """
+    acc = []
+    for loc in possMoves:
+        level: Level = game.levels[game.currLevel]
+        boardNum = whichBoardInLevel(level, loc)
+        if destHasEnemy(loc, level.boards[boardNum]):
+            enemy: Enemy = first_true(level.boards[boardNum].enemies.values(),
+                                      pred=lambda enem: enem.location == loc)
+            acc.append({
+                "type":     enemy.enemyType,
+                "name":     enemy.name,
+                "position": loc
+            })
+    return acc
+
+
+def getObjectsAroundPlayer(possMoves: list, game: Dungeon):
+    """
+    Gets the objects around a player in JSON format.
+    :params possMoves: list
+    :params game: Dungeon
+    """
+    acc = []
+    for loc in possMoves:
+        level: Level = game.levels[game.currLevel]
+        if destHasKey(loc, level):
+            acc.append({"type": "key", "position": loc})
+        elif destHasExit(loc, level):
+            acc.append({"type": "exit", "position": loc})
+    return acc
+
+
+def getPlayerUpdate(playerName: str, game: Dungeon):
+    """
+    PlayerUpdateType is:
+    {
+      "type": "player-update",
+      "layout": (tile-layout), # getLayout?
+      "position": (point), # getPlayer.location
+      "objects": (object-list), # getLocationsAround.map(if destHasItem || desthasKey -> return object)
+        [ { "type": "key", "position": [ 4, 2 ] },
+               { "type": "exit", "position": [ 7, 17 ] } ]
+      "actors": (actor-position-list) # potentially getLocationsAround.map(if destHasEnemy -> return enemy)
+    }
+
+    1. Finds 25 points: surrounding 24 of given point
+    2. Layout based on the 25 points
+    3. Will check if enemies exist on any of those 25
+    4. Will check if key or exit on any of those 25
+    """
+    player: Player = getPlayer(game.levels[game.currLevel], playerName)
+    possMoves = getFieldOfView(player.name, game.levels[game.currLevel])
+    output = {"type":     "player-update",
+              "layout":   getTileLayout(game, player),
+              "position": [player.location[0], player.location[1]],
+              "objects":  getObjectsAroundPlayer(possMoves, game),
+              "actors":   getEnemiesAroundPlayer(possMoves, game)}
+    return output
 
 
 def main():
@@ -162,7 +264,7 @@ def main():
             wholeFile = file.read()
             portions = wholeFile.split('\n\n')
             cleaned = list(filter(lambda port: port != '', portions))
-            NUM_LEVELS = cleaned[0]
+            NUM_LEVELS = int(cleaned[0])
             JSON_LEVELS = cleaned[1:]
     else:
         log("using default level")
@@ -171,7 +273,7 @@ def main():
             wholeFile = file.read()
             portions = wholeFile.split('\n\n')
             cleaned = list(filter(lambda port: port != '', portions))
-            NUM_LEVELS = cleaned[0]
+            NUM_LEVELS = int(cleaned[0])
             JSON_LEVELS = cleaned[1:]
 
     if args.clients:
@@ -215,12 +317,13 @@ def main():
     # Ready to begin
 
     CONNS = {}
+    SOCK = None
 
     try:
-        sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        sock.settimeout(WAIT)
-        sock.bind((ADDRESS, PORT))
-        sock.listen(CLIENTS)
+        SOCK = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        SOCK.settimeout(WAIT)
+        SOCK.bind((ADDRESS, PORT))
+        SOCK.listen(CLIENTS)
 
         numPlayersConnected = 0
 
@@ -231,7 +334,7 @@ def main():
                 log("begin loop")
 
                 # Block waiting for new connection
-                conn, client_addr = sock.accept()
+                conn, client_addr = SOCK.accept()
                 log("Got a connection")
 
                 conn.send(welcomeMsg('"Alon"').encode('utf-8'))
@@ -240,7 +343,7 @@ def main():
                 name = conn.recv(1024).decode('utf-8').strip()
                 log("Name received", name)
 
-                CONNS[json.loads(name)] = conn  # register the player's conn
+                CONNS[name] = conn  # register the player's conn
                 log("Connected players:", str(CONNS.keys()))
 
                 numPlayersConnected += 1
@@ -265,21 +368,20 @@ def main():
         levels = [convertJsonLevel(jsonLevel["rooms"], jsonLevel["hallways"],
                                    jsonLevel["objects"]) for jsonLevel in
                   jsonGameLevels]
-        playerNames = [json.loads(name) for name in CONNS.keys()]
+        playerNames = list(CONNS.keys())
         initPlayerLocs, levels[0] = populatePlayers(levels[0],
                                                     playerNames)  # init first level players
 
         # Create game
         GAME = Dungeon(levels, playerNames, 0, False)
-
         GAME = initEnemies(GAME, initPlayerLocs)
 
+        # Broadcast initial game state
         broadcast(startLevelMsg(1, playerNames), CONNS)
 
+        # Send initial player update msgs
         for playerName in playerNames:
-            temp = 3
-            # TODO send player update msg args
-            # FIXME sendPlayer(playerName, playerUpdateMsg(view), CONNS)
+            sendPlayer(playerName, playerUpdateMsg(playerName, GAME), CONNS)
 
         # Enter main loop
         while True:
@@ -289,14 +391,21 @@ def main():
 
     except FileNotFoundError:
         print("Couldn't find that level file. Try again")
+        closeConns(CONNS)
+        if SOCK:
+            SOCK.close()
         sys.exit(1)
     except json.JSONDecodeError:
         print("Malformed level file. Check your formatting")
+        closeConns(CONNS)
+        if SOCK:
+            SOCK.close()
         sys.exit(1)
     except KeyboardInterrupt:
         print("\nExiting...")
-        if sock:
-            sock.close()
+        closeConns(CONNS)
+        if SOCK:
+            SOCK.close()
         sys.exit(0)
 
 

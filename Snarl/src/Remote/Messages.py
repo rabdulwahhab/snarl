@@ -1,5 +1,10 @@
 import json
 from Types import *
+from Server import getPlayerUpdate
+
+
+def formatted(msgDict):
+    return json.dumps(msgDict) + "\n"
 
 
 def welcomeMsg(jsonStr: str):
@@ -7,7 +12,7 @@ def welcomeMsg(jsonStr: str):
         'type': 'welcome',
         'info': json.loads(jsonStr)
     }
-    return json.dumps(out)
+    return formatted(out)
 
 
 def startLevelMsg(levelNum: int, playerNames: list):
@@ -16,24 +21,10 @@ def startLevelMsg(levelNum: int, playerNames: list):
         "level":   levelNum,
         "players": playerNames
     }
-    return json.dumps(out)
+    return formatted(out)
 
 
-def translateObjects(view: PlayerView):
-    return None
-
-
-def translateActors(view: PlayerView):
-    return None
-
-
-def playerUpdateMsg(view: PlayerView, msg=None):
-    out = {
-        "type":     "player-update",
-        "layout":   view.tiles,
-        "position": view.position,
-        "objects":  translateObjects(view),
-        "actors":   translateActors(view),
-        "message":  msg
-    }
-    return json.dumps(out)
+def playerUpdateMsg(playerName: str, game: Dungeon, msg=None):
+    out = getPlayerUpdate(playerName, game)
+    out["message"] = msg
+    return formatted(out)

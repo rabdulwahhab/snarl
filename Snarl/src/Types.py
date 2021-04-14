@@ -92,7 +92,7 @@ class PlayerView:
                  exits=[],
                  players=[], enemies=[]):
         self.name = name
-        self.tiles = tiles  # 5x5 of times with absolute locations
+        self.tiles = tiles  # 5x5 of tiles with absolute locations
         self.position = position
         self.keys = keys
         self.exits = exits

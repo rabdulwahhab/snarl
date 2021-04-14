@@ -4,7 +4,6 @@ from random import randint
 from functools import partial, reduce
 import math
 import random
-from more_itertools import first_true
 
 
 def log(*args):

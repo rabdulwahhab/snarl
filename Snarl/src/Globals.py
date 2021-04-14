@@ -1,5 +1,5 @@
 from math import floor
-from pygame import font
+# from pygame import font
 
 TILE_WIDTH = 30
 TILE_HEIGHT = 30
@@ -23,5 +23,5 @@ BG_COLOR = (255, 255, 255)  # white...boring
 GAME_WIDTH = floor(GAME_DISPLAY_WIDTH / TILE_WIDTH)
 GAME_HEIGHT = floor(GAME_DISPLAY_HEIGHT / TILE_HEIGHT)
 
-font.init()
-FONT = font.SysFont('arial', 24)
+# font.init()
+# FONT = font.SysFont('arial', 24)
