@@ -9,16 +9,28 @@ from Util import whichBoardInLevel, logInFile, getPlayer, genXRandCoords, \
 log = logInFile("GameManager.py")
 
 
-def move(entityName: str, destination: tuple, game: Dungeon, isPlayer=True):
+def move(entityName: str, destination, game: Dungeon, isPlayer=True):
     """
     Updates the game to reflect the movement of a player if they
-    can move to the given destination in the game. Returns an
-    unmodified game if the player cannot move based on game rules.
+    can move to the given destination in the game or skip a turn when
+    destination is None. Returns an unmodified game if the player cannot
+    move based on game rules.
     :param entityName: str
-    :param destination: tuple
+    :param destination: tuple | None
     :param game: Dungeon
     """
     currLevel: Level = game.levels[game.currLevel]
+
+    # Player move is skipped
+    if destination is None:
+        # only increment player turn
+        updatedPlayerTurn = currLevel.playerTurn + 1
+        if updatedPlayerTurn == len(game.players) - 1:
+            currLevel.playerTurn = 0
+        else:
+            currLevel.playerTurn = updatedPlayerTurn
+        return game
+
     entity = getPlayer(currLevel, entityName) if isPlayer else getEnemy(
         currLevel, entityName)
     currBoardNum = whichBoardInLevel(currLevel, entity.location)

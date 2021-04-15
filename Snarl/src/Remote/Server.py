@@ -1,13 +1,10 @@
 import socket
 import sys
-import json
 import math
-import argparse
-import re
 
 sys.path.append("../")
 from Util import logInFile, getRandomRoomInLevel, genXRandCoords, \
-    isDoorLocation, isTraversable, whichBoardInLevel
+    isDoorLocation, isTraversable, whichBoardInLevel, intifyTuple
 from Player import getVisibleTiles, getFieldOfView, getPlayer
 from Types import *
 from GameManager import *
@@ -28,6 +25,10 @@ The Snarl Server:
 """
 
 log = logInFile("Server.py")
+
+
+class PlayerDisconnect(Exception):
+    pass
 
 
 def populatePlayers(level: Level, playerNames: list):
@@ -214,105 +215,102 @@ def getPlayerUpdate(playerName: str, game: Dungeon):
     return output
 
 
-def main():
+def registerPlayers(numClients: int, sock: socket.socket):
+    """
+    Registers numClients amount of clients to the game on the socket
+    as players and returns a dict of name -> connection.
+    :params numClients: int
+    :params sock: socket.socket
+    """
+    CONNS = {}
+    numPlayersConnected = 0
+    # Dish out connections + register sockets
+    while numPlayersConnected < numClients:
+        try:
+            log = logInFile("Server.py", "Join loop")
+            log("begin loop")
+
+            # Block waiting for new connection
+            conn, client_addr = sock.accept()
+            log("Got a connection")
+
+            conn.send(welcomeMsg('"Alon"').encode('utf-8'))
+            conn.send("Enter your name > ".encode('utf-8'))
+
+            name = conn.recv(1024).decode('utf-8').strip()
+            log("Name received", name)
+
+            CONNS[name] = conn  # register the player's conn
+            log("Connected players:", str(list(CONNS.keys())))
+
+            numPlayersConnected += 1
+            if numPlayersConnected < numClients:
+                conn.send(
+                    "Welcome {}! Please wait for {} other players to join\n".format(
+                        name, numClients - numPlayersConnected).encode(
+                        'utf-8'))
+        except UnicodeDecodeError:
+            if name in CONNS.keys():
+                del CONNS[name]
+            continue
+        except socket.timeout:
+            break
+    return CONNS
+
+
+def setupGame(playerNames: list, jsonLevels: list):
+    """
+    Initializes and returns a dungeon from a list of json levels and
+    player names.
+    :params playerNames: list
+    :params jsonLevels: list
+    """
+    jsonGameLevels = [json.loads(rawJsonLevel) for rawJsonLevel in
+                      jsonLevels]
+    log("got+converted {} levels".format(len(jsonGameLevels)))
+    levels = [convertJsonLevel(jsonLevel["rooms"], jsonLevel["hallways"],
+                               jsonLevel["objects"]) for jsonLevel in
+              jsonGameLevels]
+    # init first level players
+    initPlayerLocs, levels[0] = populatePlayers(levels[0], playerNames)
+
+    # Create game
+    GAME = Dungeon(levels, playerNames, 0, False)
+    GAME = initEnemies(GAME, initPlayerLocs)
+    return GAME, playerNames
+
+
+def executeTurn(conn: socket.socket):
+    """
+    Awaits a move from the given player connection and returns a
+    location tuple or None if turn is skipped or connection fails.
+    :params conn: socket.socket
+    """
+    conn.send("move".encode('utf-8'))
+    while True:
+        try:
+            resp = conn.recv(4096).decode('utf-8')
+            playerMove = json.loads(resp)
+            conn.send("ok".encode('utf-8'))
+            to = intifyTuple(playerMove["to"]) if playerMove["to"] else None
+            return to
+        except json.JSONDecodeError:
+            conn.send("Invalid move. Try again".encode('utf-8'))
+        except BrokenPipeError:
+            raise PlayerDisconnect
+
+
+def start(args):
     log = logInFile("Server.py")
 
-    DEFAULT_LEVEL = './snarl.levels'
-    CLIENTS = 4
-    WAIT = 60
-    OBSERVE = False
-    ADDRESS = '127.0.0.1'
-    PORT = 45678
-
-    parser = argparse.ArgumentParser()  # initialize
-    # this is how you add an optional argument
-    parser.add_argument("--levels",
-                        help="Enter the name of an input JSON Level file",
-                        nargs='?',
-                        const=DEFAULT_LEVEL, type=str)
-    parser.add_argument("--clients",
-                        help="Enter the amount of clients connecting to the game",
-                        nargs='?',
-                        const=CLIENTS, type=int)
-    parser.add_argument("--wait",
-                        nargs='?',
-                        help="Enter the amount of time to wait for the next client to connect",
-                        const=WAIT, type=int)
-    parser.add_argument("--observe", help="Observe the game",
-                        action="store_true")
-    parser.add_argument("--address",
-                        nargs='?',
-                        help="Enter the IP address to listen for connections",
-                        const=ADDRESS, type=str)
-    parser.add_argument("--port",
-                        nargs='?',
-                        help="Enter the port number to listen on",
-                        const=PORT, type=int)
-
-    # this is called after you define your optional args
-    args = parser.parse_args()
-
     # Global vars
-    JSON_LEVELS = None
-    NUM_LEVELS = 0
-
-    # Parse options
-    if args.levels:
-        # global NUM_LEVELS, JSON_LEVELS, log
-        log('got levels flag', args.levels)
-        with open(args.levels) as file:
-            wholeFile = file.read()
-            portions = wholeFile.split('\n\n')
-            cleaned = list(filter(lambda port: port != '', portions))
-            NUM_LEVELS = int(cleaned[0])
-            JSON_LEVELS = cleaned[1:]
-    else:
-        log("using default level")
-        # global NUM_LEVELS, JSON_LEVELS, log
-        with open(DEFAULT_LEVEL) as file:
-            wholeFile = file.read()
-            portions = wholeFile.split('\n\n')
-            cleaned = list(filter(lambda port: port != '', portions))
-            NUM_LEVELS = int(cleaned[0])
-            JSON_LEVELS = cleaned[1:]
-
-    if args.clients:
-        # global CLIENTS, log
-        if 1 <= args.clients <= 4:
-            log('got clients flag', str(args.clients))
-            CLIENTS = args.clients
-        else:
-            print("Clients must be from 1-4")
-            sys.exit(1)
-
-    if args.wait:
-        # global WAIT, log
-        log('got wait flag', str(args.wait))
-        WAIT = args.wait
-
-    if args.observe:
-        # global OBSERVE, log
-        log('got observe')
-        OBSERVE = True
-
-    if args.address:
-        # global ADDRESS, log
-        log("got address flag")
-        if re.search("\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}", args.address):
-            ADDRESS = args.address
-        else:
-            print("Invalid address given. Try again")
-            sys.exit(1)
-
-    if args.port:
-        # global PORT, log
-        log("got port flag")
-        if 2000 <= args.port <= 65000:
-            log('got port flag', str(args.port))
-            PORT = args.port
-        else:
-            print("Invalid port number. Try again")
-            sys.exit(1)
+    JSON_LEVELS = args['jsonLevels']
+    NUM_LEVELS = args['numLevels']
+    NUM_CLIENTS = args['numClients']
+    WAIT = args['wait']
+    OBSERVE = args['observe']
+    ADDRESS = args['address']
+    PORT = args['port']
 
     # Ready to begin
 
@@ -321,60 +319,16 @@ def main():
 
     try:
         SOCK = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        SOCK.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
         SOCK.settimeout(WAIT)
         SOCK.bind((ADDRESS, PORT))
-        SOCK.listen(CLIENTS)
+        SOCK.listen(NUM_CLIENTS)
 
-        numPlayersConnected = 0
-
-        # Dish out connections + register sockets
-        while numPlayersConnected < CLIENTS:
-            try:
-                log = logInFile("Server.py", "Join loop")
-                log("begin loop")
-
-                # Block waiting for new connection
-                conn, client_addr = SOCK.accept()
-                log("Got a connection")
-
-                conn.send(welcomeMsg('"Alon"').encode('utf-8'))
-                conn.send("Enter your name > ".encode('utf-8'))
-
-                name = conn.recv(1024).decode('utf-8').strip()
-                log("Name received", name)
-
-                CONNS[name] = conn  # register the player's conn
-                log("Connected players:", str(CONNS.keys()))
-
-                numPlayersConnected += 1
-                if numPlayersConnected < CLIENTS:
-                    conn.send(
-                        "Welcome {}! Please wait for {} other players to join\n".format(
-                            name, CLIENTS - numPlayersConnected).encode(
-                            'utf-8'))
-            except UnicodeDecodeError:
-                log("Received EOF (probably)")
-                if name in CONNS.keys():
-                    del CONNS[name]
-                continue
-            except socket.timeout:
-                break
+        CONNS = registerPlayers(NUM_CLIENTS, SOCK)
 
         # Setup game (Convert levels, populate players, populate enemies,
         # create dungeon)
-        jsonGameLevels = [json.loads(rawJsonLevel) for rawJsonLevel in
-                          JSON_LEVELS]
-        log("got+converted {} levels".format(len(jsonGameLevels)))
-        levels = [convertJsonLevel(jsonLevel["rooms"], jsonLevel["hallways"],
-                                   jsonLevel["objects"]) for jsonLevel in
-                  jsonGameLevels]
-        playerNames = list(CONNS.keys())
-        initPlayerLocs, levels[0] = populatePlayers(levels[0],
-                                                    playerNames)  # init first level players
-
-        # Create game
-        GAME = Dungeon(levels, playerNames, 0, False)
-        GAME = initEnemies(GAME, initPlayerLocs)
+        GAME, playerNames = setupGame(list(CONNS.keys()), JSON_LEVELS)
 
         # Broadcast initial game state
         broadcast(startLevelMsg(1, playerNames), CONNS)
@@ -383,18 +337,30 @@ def main():
         for playerName in playerNames:
             sendPlayer(playerName, playerUpdateMsg(playerName, GAME), CONNS)
 
+        log("GAME INITIALIZED!")
+
         # Enter main loop
         while True:
-            log("DONE CONNECTING")
-            closeConns(CONNS)
-            sys.exit(0)
+            # Execute player turns
+            for playerName in playerNames:
+                try:
+                    playerMove = executeTurn(CONNS[playerName])
+                    GAME = move(playerName, playerMove, GAME)
+                    msg = playerName + " moved"
+                    broadcast(playerUpdateMsg(playerName, GAME, msg), CONNS)
+                except PlayerDisconnect:
+                    # TODO broadcast??
+                    currLevel: Level = GAME.levels[GAME.currLevel]
+                    player: Player = getPlayer(currLevel, playerName)
+                    playerBoardNum = whichBoardInLevel(currLevel, player.location)
+                    GAME = removePlayer(playerName, playerBoardNum, GAME)
+                    # TODO reset playerNames
+                    continue
 
-    except FileNotFoundError:
-        print("Couldn't find that level file. Try again")
-        closeConns(CONNS)
-        if SOCK:
-            SOCK.close()
-        sys.exit(1)
+            # Execute enemy turns
+            # TODO
+
+
     except json.JSONDecodeError:
         print("Malformed level file. Check your formatting")
         closeConns(CONNS)
@@ -405,9 +371,8 @@ def main():
         print("\nExiting...")
         closeConns(CONNS)
         if SOCK:
+            SOCK.shutdown()
             SOCK.close()
         sys.exit(0)
 
 
-if __name__ == '__main__':
-    main()

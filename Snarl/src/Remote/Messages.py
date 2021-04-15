@@ -1,6 +1,6 @@
 import json
 from Types import *
-from Server import getPlayerUpdate
+import Server
 
 
 def formatted(msgDict):
@@ -25,6 +25,6 @@ def startLevelMsg(levelNum: int, playerNames: list):
 
 
 def playerUpdateMsg(playerName: str, game: Dungeon, msg=None):
-    out = getPlayerUpdate(playerName, game)
+    out = Server.getPlayerUpdate(playerName, game)
     out["message"] = msg
     return formatted(out)
