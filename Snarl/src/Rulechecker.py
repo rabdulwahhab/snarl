@@ -1,6 +1,6 @@
 from Types import *
 from Util import whichBoardInLevel, getLocationsAround, locationInBounds, \
-    locationInLevelBounds, isTileOnBoard, logInFile
+    locationInLevelBounds, isTileOnBoard, logInFile, getAllPlayers
 from more_itertools import unique_everseen
 
 log = logInFile("Rulechecker.py")
@@ -176,8 +176,7 @@ def isLevelOver(level: Level):
     Determines if the level is over (all players no longer in level's boards.
     :param level: Level
     """
-    currBoard: Board = level.boards[level.currBoard]
-    return len(currBoard.players.values()) == 0
+    return len(getAllPlayers(level)) == 0
 
 
 def isGameOver(dungeon: Dungeon):

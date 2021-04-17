@@ -15,19 +15,32 @@ class TileEnum(Enum):
 
 
 class Dungeon:
-    def __init__(self, levels: list, players: list, currLevel: int,
-                 isGameOver: bool, name="default"):
+    def __init__(self,
+                 levels: list,
+                 players: list,
+                 currLevel: int,
+                 isGameOver: bool,
+                 name="default"):
         self.levels = levels
         self.players = players
         self.currLevel = currLevel  # 0-indexed
         self.isGameOver = isGameOver
         self.name = name
+        self.scores = {name: {'exits': 0, 'ejects': 0, 'keys': 0} for name in
+                       players}
 
 
 class Level:
-    def __init__(self, keyLocation: tuple, exitLocation: tuple, boards: list,
+    def __init__(self,
+                 keyLocation: tuple,
+                 exitLocation: tuple,
+                 boards: list,
                  exitUnlocked: bool,
-                 playerTurn=0, enemyTurn=-1):
+                 playerTurn=0,
+                 enemyTurn=-1,
+                 key="",
+                 exits=[],
+                 ejects=[]):
         self.keyLocation = keyLocation
         self.exitLocation = exitLocation
         self.boards = boards
@@ -36,6 +49,9 @@ class Level:
         self.enemyTurn = enemyTurn
         self.currBoard = 0
         self.items = None
+        self.key = key,
+        self.exits = exits,
+        self.ejects = ejects
 
 
 class Board:

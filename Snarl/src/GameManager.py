@@ -74,7 +74,7 @@ def interact(playerName: str, location: tuple, game: Dungeon):
     if destHasEnemy(location, currBoard):
         return interactWithEnemy(playerName, location, game)
     elif destHasKey(location, currLevel):
-        return interactWithKey(location, game)
+        return interactWithKey(playerName, location, game)
     elif destHasExit(location, currLevel):
         return interactWithExit(playerName, location, game)
     # elif destHasItem(location, currBoard):
@@ -82,6 +82,18 @@ def interact(playerName: str, location: tuple, game: Dungeon):
     #     return game
     else:
         return game
+
+
+def ejectPlayer(playerName: str, currBoardNum: int, game: Dungeon):
+    game.levels[game.currLevel].ejects.append(playerName)
+    game.scores[playerName]['ejects'] += 1
+    return removePlayer(playerName, currBoardNum, game)
+
+
+def exitPlayer(playerName: str, currBoardNum: int, game: Dungeon):
+    game.levels[game.currLevel].exits.append(playerName)
+    game.scores[playerName]['exits'] += 1
+    return removePlayer(playerName, currBoardNum, game)
 
 
 def enemyInteract(enemyName: str, destination: tuple, game: Dungeon):
@@ -145,8 +157,7 @@ def interactWithEnemy(playerName: str, location: tuple, game: Dungeon):
     for enemyName in currBoard.enemies.keys():
         enemy: Enemy = currBoard.enemies[enemyName]
         if location == enemy.location:  # fight!
-
-            updatedGame = removePlayer(playerName, currBoardNum, game)
+            updatedGame = ejectPlayer(playerName, currBoardNum, game)
             # if last player in level, game over
             if len(getAllPlayers(currLevel)) == 0:
                 updatedGame = endGame(updatedGame)
@@ -154,16 +165,19 @@ def interactWithEnemy(playerName: str, location: tuple, game: Dungeon):
     return game
 
 
-def interactWithKey(location: tuple, game: Dungeon):
+def interactWithKey(playerName: str, location: tuple, game: Dungeon):
     """
     Computes the resulting game state of a player acquiring a key in the
     level.
+    :param playerName: str
     :param location: tuple
     :param game: Dungeon
     """
     level = game.levels[game.currLevel]
     if level.keyLocation == location:
         level.exitUnlocked = True
+        level.key = playerName
+        game.scores[playerName]['keys'] += 1
     return game
 
 
@@ -231,18 +245,11 @@ def interactWithExit(playerName: str, location: tuple, game: Dungeon):
         if location == level.exitLocation:
             if level.exitUnlocked:
                 currBoardNum = whichBoardInLevel(level, location)
-                playersLeft = getPlayersInLevel(level)
-                log("Players left --->", str(playersLeft))
-                if len(playersLeft) == 1:  # last player
-                    # FIXME return advanceLevel(game)
-                    log("Last player")
-                    return advanceLevel(game)
-                else:
-                    log("Removing player")
-                    updatedGame = removePlayer(playerName, currBoardNum, game)
-                    if len(getAllPlayers(level)) == 0:
-                        updatedGame = endGame(updatedGame)
-                    return updatedGame
+                log("Removing player")
+                updatedGame = exitPlayer(playerName, currBoardNum, game)
+                if len(getAllPlayers(level)) == 0:
+                    updatedGame = endGame(updatedGame)
+                return updatedGame
 
     return game
 

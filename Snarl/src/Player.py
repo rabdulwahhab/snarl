@@ -97,6 +97,8 @@ def getFieldOfView(playerName: str, level: Level):
     for r in range(5):
         for c in range(5):
             relLoc = (origin[0] + r, origin[1] + c)
+            if relLoc == player.location:
+                continue
             if locationInLevelBounds(level, relLoc):
                 fieldOfView.append(relLoc)
     return fieldOfView

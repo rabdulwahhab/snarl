@@ -4,9 +4,11 @@ import math
 
 sys.path.append("../")
 from Util import logInFile, getRandomRoomInLevel, genXRandCoords, \
-    isDoorLocation, isTraversable, whichBoardInLevel, intifyTuple, getEnemiesInLevel
+    isDoorLocation, isTraversable, whichBoardInLevel, intifyTuple, \
+    getEnemiesInLevel
 from Player import getVisibleTiles, getFieldOfView, getPlayer
 from Types import *
+from Rulechecker import isLevelOver
 from GameManager import *
 from Enemy import enemyNextMove
 from Messages import *
@@ -120,11 +122,22 @@ def broadcast(msg: str, conns: dict):
 
 def broadcastPlayerUpdates(conns: dict, game: Dungeon):
     for playerName in conns.keys():
-        msg = ""
-        update = getPlayerUpdate(playerName, game)
-        msg += json.dumps(update)
+        msg = "--> Player Update: {}\n".format(playerName)
+        msg += formatted(getPlayerUpdate(playerName, game))
         sendPlayer(playerName, msg, conns)
-        #conns[playerName].send(msg.encode('utf-8'))
+
+
+def broadcastLevelOver(game: Dungeon, conns: dict):
+    for playerName in conns.keys():
+        msg = "--> Level Over <--\n"
+        msg += endLevelMsg(game)
+        sendPlayer(playerName, msg, conns)
+
+
+def broadcastGameOver(game: Dungeon, conns: dict):
+    msg = "=== GAME OVER ===\n"
+    msg += endGameMsg(game)
+    broadcast(msg, conns)
 
 
 def getTileType(location: tuple, game: Dungeon):
@@ -160,9 +173,9 @@ def getTileLayout(game: Dungeon, player: Player):
     return layout
 
 
-def getEnemiesAroundPlayer(possMoves: list, game: Dungeon):
+def getActorsAroundPlayer(possMoves: list, game: Dungeon):
     """
-    Returns the enemies around a player in JSON format.
+    Returns the actors around a player in JSON format.
     :params possMoves: list
     :params game: Dungeon
     """
@@ -176,6 +189,15 @@ def getEnemiesAroundPlayer(possMoves: list, game: Dungeon):
             acc.append({
                 "type":     enemy.enemyType,
                 "name":     enemy.name,
+                "position": loc
+            })
+        if destHasPlayer(loc, level.boards[boardNum]):
+            player: Player = first_true(level.boards[boardNum].players.values(),
+                                        pred=lambda
+                                            playa: playa.location == loc)
+            acc.append({
+                "type":     "player",
+                "name":     player.name,
                 "position": loc
             })
     return acc
@@ -221,7 +243,7 @@ def getPlayerUpdate(playerName: str, game: Dungeon):
               "layout":   getTileLayout(game, player),
               "position": [player.location[0], player.location[1]],
               "objects":  getObjectsAroundPlayer(possMoves, game),
-              "actors":   getEnemiesAroundPlayer(possMoves, game)}
+              "actors":   getActorsAroundPlayer(possMoves, game)}
     return output
 
 
@@ -244,8 +266,9 @@ def registerPlayers(numClients: int, sock: socket.socket):
             conn, client_addr = sock.accept()
             log("Got a connection")
 
-            conn.sendall(welcomeMsg('"Alon"').encode('utf-8'))
-            conn.sendall("Enter your name".encode('utf-8'))
+            introMsg = welcomeMsg('"Alon"')
+            introMsg += "\nEnter your name"
+            conn.sendall(introMsg.encode('utf-8'))
 
             name = conn.recv(1024).decode('utf-8').strip()
             log("Name received", name)
@@ -260,11 +283,22 @@ def registerPlayers(numClients: int, sock: socket.socket):
                         name, numClients - numPlayersConnected).encode(
                         'utf-8'))
         except UnicodeDecodeError:
+            log("unicode decode error")
             if name in CONNS.keys():
                 del CONNS[name]
             continue
-        except socket.timeout:
-            break
+        except ConnectionResetError:
+            log("conn reset error")
+            if name in CONNS.keys():
+                del CONNS[name]
+            continue
+            # raise PlayerDisconnect
+        except BrokenPipeError:
+            log("broken pipe error")
+            if name in CONNS.keys():
+                del CONNS[name]
+            continue
+            # raise PlayerDisconnect
     return CONNS
 
 
@@ -305,6 +339,7 @@ def executeTurn(conn: socket.socket):
             to = intifyTuple(playerMove["to"]) if playerMove["to"] else None
             return to
         except json.JSONDecodeError:
+            # FIXME getting eof tries to decode but sock disconnected
             conn.sendall("Invalid move. Try again".encode('utf-8'))
         except ConnectionResetError:
             raise PlayerDisconnect
@@ -346,31 +381,57 @@ def start(args):
         broadcast(startLevelMsg(1, playerNames), CONNS)
 
         # Send initial player update msgs
-        for playerName in playerNames:
-            sendPlayer(playerName, playerUpdateMsg(playerName, GAME), CONNS)
+        broadcastPlayerUpdates(CONNS, GAME)
 
         log("GAME INITIALIZED!")
 
         # Enter main loop
         while True:
+
+            # Obtain the current level
+            currLevel: Level = GAME.levels[GAME.currLevel]
+
+            # Check if the level has been completed
+            if isLevelOver(currLevel):
+                GAME = advanceLevel(GAME)
+                broadcastLevelOver(GAME, CONNS)
+
+            # Check if game is over
+            if GAME.isGameOver:
+                broadcastGameOver(GAME, CONNS)
+                broadcast("disconnect", CONNS)
+
             # Execute player turns
             for playerName in playerNames:
                 try:
-                    test: Player = getPlayer(GAME.levels[GAME.currLevel], "saleha")
-                    log("Before", test.name, str(test.location))
-                    playerMove = executeTurn(CONNS[playerName])
-                    log("playerMove is: ", str(playerMove))
-                    GAME = move(playerName, playerMove, GAME)
-                    test: Player = getPlayer(GAME.levels[GAME.currLevel], "saleha")
-                    log("After", test.name, str(test.location))
-                    msg = playerName + " moved"
+                    playerTurn = GAME.levels[GAME.currLevel].playerTurn
+                    MAX_TRIES = 5
+                    for tries in range(MAX_TRIES):
+                        playerMove = executeTurn(CONNS[playerName])
+                        GAME = move(playerName, playerMove, GAME)
+                        moveMade = playerTurn != GAME.levels[
+                            GAME.currLevel].playerTurn
+                        if moveMade:
+                            break
+                        # last turn and still no valid move made
+                        if not moveMade:
+                            if tries == (MAX_TRIES - 1):
+                                GAME = move(playerName, None, GAME)
+                            else:
+                                sendPlayer(playerName,
+                                           "Invalid move. Try again...",
+                                           CONNS)
+                                sendPlayer(playerName,
+                                           "move",
+                                           CONNS)
+
                     broadcastPlayerUpdates(CONNS, GAME)
-                    #broadcast(playerUpdateMsg(playerName, GAME, msg), CONNS)
                 except PlayerDisconnect:
                     # TODO broadcast??
-                    currLevel: Level = GAME.levels[GAME.currLevel]
+                    log("PLAYER DISCONNECTED")
                     player: Player = getPlayer(currLevel, playerName)
-                    playerBoardNum = whichBoardInLevel(currLevel, player.location)
+                    playerBoardNum = whichBoardInLevel(currLevel,
+                                                       player.location)
                     GAME = removePlayer(playerName, playerBoardNum, GAME)
                     # TODO reset playerNames
                     continue
@@ -380,9 +441,10 @@ def start(args):
             for enemy in getEnemiesInLevel(currLevel):
                 nextMove = enemyNextMove(enemy, GAME)
                 GAME = move(enemy.name, nextMove, GAME, isPlayer=False)
-                for playerName in playerNames:
-                    msg = enemy.name + " moved"
-                    broadcast(playerUpdateMsg(playerName, GAME, msg), CONNS)
+                broadcastPlayerUpdates(CONNS, GAME)
+                # for playerName in playerNames:
+                # msg = enemy.name + " moved"
+                # broadcast(playerUpdateMsg(playerName, GAME, msg), CONNS)
 
 
     except json.JSONDecodeError:
@@ -397,5 +459,3 @@ def start(args):
         if SOCK:
             SOCK.close()
         sys.exit(0)
-
-

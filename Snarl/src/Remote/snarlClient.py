@@ -56,9 +56,8 @@ def main():
         def receive(sock: socket.socket):
             return sock.recv(4026).decode('utf-8')
 
-        # log("Should be the welcome message")
-        print(receive(SOCK))  # Welcome message
-        print(receive(SOCK))  # Prompt name
+        print(receive(SOCK))  # Intro message
+        # print(receive(SOCK))  # Prompt name
         msg = input("> ")
         SOCK.send(msg.encode('utf-8'))
 
@@ -67,23 +66,27 @@ def main():
             # try:
             while True:
                 # log("got msg")
-                resp = SOCK.recv(4026).decode('utf-8')
+                resp = receive(SOCK)
                 if resp == "move":
-                    print("It's your turn to move\n To > ")
+                    print("It's your turn to move")
                     break
                 print(resp + "\n\n")
             # except socket.timeout:  # no further messages
                 # log("no msgs")
                 # pass
 
-            msg = input()
+            msg = input("> ")
             SOCK.send(msg.encode('utf-8'))
 
     except BrokenPipeError:
         print("\nLost connection with the host...")
+        if SOCK:
+            SOCK.close()
         sys.exit(1)
     except ConnectionResetError:
         print("\nLost connection with the host...")
+        if SOCK:
+            SOCK.close()
         sys.exit(1)
     except EOFError:
         print("\nQuitting...")
@@ -92,6 +95,8 @@ def main():
         sys.exit(0)
     except KeyboardInterrupt:
         print("\nExiting...")
+        if SOCK:
+            SOCK.close()
         sys.exit(1)
 
 
