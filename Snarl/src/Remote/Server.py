@@ -4,10 +4,11 @@ import math
 
 sys.path.append("../")
 from Util import logInFile, getRandomRoomInLevel, genXRandCoords, \
-    isDoorLocation, isTraversable, whichBoardInLevel, intifyTuple
+    isDoorLocation, isTraversable, whichBoardInLevel, intifyTuple, getEnemiesInLevel
 from Player import getVisibleTiles, getFieldOfView, getPlayer
 from Types import *
 from GameManager import *
+from Enemy import enemyNextMove
 from Messages import *
 from Convert import convertJsonLevel, addPlayersToBoard, addEnemiesToBoard
 from more_itertools import first_true
@@ -106,15 +107,24 @@ def closeConns(conns: dict):
         conn.close()
 
 
+def sendPlayer(playerName: str, msg: str, conns: dict):
+    conn = conns[playerName]
+    conn.sendall(msg.encode('utf-8'))
+
+
 def broadcast(msg: str, conns: dict):
     msg = json.dumps(msg)
     for conn in conns.values():
-        conn.send(msg.encode('utf-8'))
+        conn.sendall(msg.encode('utf-8'))
 
 
-def sendPlayer(playerName: str, msg: str, conns: dict):
-    conn = conns[playerName]
-    conn.send(msg.encode('utf-8'))
+def broadcastPlayerUpdates(conns: dict, game: Dungeon):
+    for playerName in conns.keys():
+        msg = ""
+        update = getPlayerUpdate(playerName, game)
+        msg += json.dumps(update)
+        sendPlayer(playerName, msg, conns)
+        #conns[playerName].send(msg.encode('utf-8'))
 
 
 def getTileType(location: tuple, game: Dungeon):
@@ -234,8 +244,8 @@ def registerPlayers(numClients: int, sock: socket.socket):
             conn, client_addr = sock.accept()
             log("Got a connection")
 
-            conn.send(welcomeMsg('"Alon"').encode('utf-8'))
-            conn.send("Enter your name > ".encode('utf-8'))
+            conn.sendall(welcomeMsg('"Alon"').encode('utf-8'))
+            conn.sendall("Enter your name".encode('utf-8'))
 
             name = conn.recv(1024).decode('utf-8').strip()
             log("Name received", name)
@@ -245,7 +255,7 @@ def registerPlayers(numClients: int, sock: socket.socket):
 
             numPlayersConnected += 1
             if numPlayersConnected < numClients:
-                conn.send(
+                conn.sendall(
                     "Welcome {}! Please wait for {} other players to join\n".format(
                         name, numClients - numPlayersConnected).encode(
                         'utf-8'))
@@ -286,16 +296,18 @@ def executeTurn(conn: socket.socket):
     location tuple or None if turn is skipped or connection fails.
     :params conn: socket.socket
     """
-    conn.send("move".encode('utf-8'))
+    conn.sendall("move".encode('utf-8'))
     while True:
         try:
             resp = conn.recv(4096).decode('utf-8')
             playerMove = json.loads(resp)
-            conn.send("ok".encode('utf-8'))
+            conn.sendall("\nok".encode('utf-8'))
             to = intifyTuple(playerMove["to"]) if playerMove["to"] else None
             return to
         except json.JSONDecodeError:
-            conn.send("Invalid move. Try again".encode('utf-8'))
+            conn.sendall("Invalid move. Try again".encode('utf-8'))
+        except ConnectionResetError:
+            raise PlayerDisconnect
         except BrokenPipeError:
             raise PlayerDisconnect
 
@@ -344,10 +356,16 @@ def start(args):
             # Execute player turns
             for playerName in playerNames:
                 try:
+                    test: Player = getPlayer(GAME.levels[GAME.currLevel], "saleha")
+                    log("Before", test.name, str(test.location))
                     playerMove = executeTurn(CONNS[playerName])
+                    log("playerMove is: ", str(playerMove))
                     GAME = move(playerName, playerMove, GAME)
+                    test: Player = getPlayer(GAME.levels[GAME.currLevel], "saleha")
+                    log("After", test.name, str(test.location))
                     msg = playerName + " moved"
-                    broadcast(playerUpdateMsg(playerName, GAME, msg), CONNS)
+                    broadcastPlayerUpdates(CONNS, GAME)
+                    #broadcast(playerUpdateMsg(playerName, GAME, msg), CONNS)
                 except PlayerDisconnect:
                     # TODO broadcast??
                     currLevel: Level = GAME.levels[GAME.currLevel]
@@ -358,7 +376,13 @@ def start(args):
                     continue
 
             # Execute enemy turns
-            # TODO
+            currLevel: Level = GAME.levels[GAME.currLevel]
+            for enemy in getEnemiesInLevel(currLevel):
+                nextMove = enemyNextMove(enemy, GAME)
+                GAME = move(enemy.name, nextMove, GAME, isPlayer=False)
+                for playerName in playerNames:
+                    msg = enemy.name + " moved"
+                    broadcast(playerUpdateMsg(playerName, GAME, msg), CONNS)
 
 
     except json.JSONDecodeError:
@@ -371,7 +395,6 @@ def start(args):
         print("\nExiting...")
         closeConns(CONNS)
         if SOCK:
-            SOCK.shutdown()
             SOCK.close()
         sys.exit(0)
 

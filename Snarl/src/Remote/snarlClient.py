@@ -50,23 +50,44 @@ def main():
 
         SOCK = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         SOCK.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+        # SOCK.settimeout(3)
         SOCK.connect((ADDRESS, PORT))
-        print(SOCK.recv(4026).decode('utf-8'))  # Welcome message
+
+        def receive(sock: socket.socket):
+            return sock.recv(4026).decode('utf-8')
+
+        # log("Should be the welcome message")
+        print(receive(SOCK))  # Welcome message
+        print(receive(SOCK))  # Prompt name
+        msg = input("> ")
+        SOCK.send(msg.encode('utf-8'))
 
         # TODO move to Client.py
         while True:
-            resp = SOCK.recv(4026).decode('utf-8')
-            print(resp)
+            # try:
+            while True:
+                # log("got msg")
+                resp = SOCK.recv(4026).decode('utf-8')
+                if resp == "move":
+                    print("It's your turn to move\n To > ")
+                    break
+                print(resp + "\n\n")
+            # except socket.timeout:  # no further messages
+                # log("no msgs")
+                # pass
+
             msg = input()
             SOCK.send(msg.encode('utf-8'))
 
     except BrokenPipeError:
         print("\nLost connection with the host...")
         sys.exit(1)
+    except ConnectionResetError:
+        print("\nLost connection with the host...")
+        sys.exit(1)
     except EOFError:
         print("\nQuitting...")
         if SOCK:
-            SOCK.shutdown()
             SOCK.close()
         sys.exit(0)
     except KeyboardInterrupt:
