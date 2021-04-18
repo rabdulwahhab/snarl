@@ -3,7 +3,6 @@ import sys
 import math
 import time
 
-sys.path.append("../")
 from Util import logInFile, getRandomRoomInLevel, genXRandCoords, \
     isDoorLocation, isTraversable, whichBoardInLevel, intifyTuple, \
     getEnemiesInLevel
